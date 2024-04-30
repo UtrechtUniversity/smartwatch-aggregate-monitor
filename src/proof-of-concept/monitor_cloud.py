@@ -191,6 +191,9 @@ if __name__=="__main__":
 
     bits = source_file.split("/")
     participant = f"{bits[1]}-{bits[-1].split('_')[0]}"
+
+    if not select_date:
+        select_date = parse_date(bits[5])
     if not select_char:
         select_char = bits[-1].split("_")[-1][:-4]
     if not wristband:
