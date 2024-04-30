@@ -132,3 +132,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# other
+/src/proof-of-concept/set_env.sh
+
