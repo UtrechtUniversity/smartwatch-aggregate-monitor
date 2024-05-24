@@ -88,9 +88,9 @@ class LowlandsFileMonitor:
 if __name__=="__main__":
 
     refresh_sec = 5
-    session_length_min = 30
-    buffer_length_min = 5
-    cfg_file = os.getenv('CFG_FILE')
+    session_length_min = 35
+    buffer_length_min = 0
+    cfg_file = os.getenv('AWS_CFG_FILE')
     local_data = '../../data/temp'
     mock_date = None
     select_date = None
