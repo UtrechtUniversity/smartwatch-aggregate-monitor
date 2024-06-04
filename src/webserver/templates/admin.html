@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lowlands EmbracePlus monitor</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery.timepicker.min.css') }}">
+    <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}" charset="utf-8"></script> 
+    <script src="{{ url_for('static', filename='js/jquery.timepicker.min.js') }}" charset="utf-8"></script> 
+</head>
+<style>
+    body {
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        color: #0c0c0c;
+        background-color: #fafffa;
+        overflow-x: hidden;
+    }
+
+    div {
+        margin-bottom: 10px;;
+    }
+    table tr td.centre {
+        text-align: center;
+    }
+    table tr td a {
+        text-decoration: none;
+    }
+    #highlight-list tr:hover {
+        background-color: #eee;
+    }
+    #highlight-list tr td.remove {
+        cursor: pointer;
+    }
+    .pointable, input[type=button] {
+        cursor: pointer;
+    }
+    .timePicker {
+        background-color: #efefef;
+        width: 50px;
+        cursor: pointer;
+    }
+</style>
+<script>
+
+    // https://www.jonthornton.com/jquery-timepicker/
+    // https://github.com/jonthornton/jquery-timepicker#timepicker-plugin-for-jquery
+
+    var id = 1
+    const Highlights = []
+    
+    class Highlight {
+        constructor(id, timestamp, label) {
+            this.timestamp = timestamp;
+            this.label = label;
+            this.id = id;
+        }
+    }
+
+    function htmlDecode(input) {
+        var doc = new DOMParser().parseFromString(input, "text/html");
+        return doc.documentElement.textContent;
+    }    
+    function deleteHighlight(id) {    
+        var del = -1
+        var label = ''
+        Highlights.forEach((x, i) => {
+            if (x.id==id) {
+                del = i;
+                label = x.label
+            }
+        })
+        if (del>-1 && window.confirm(htmlDecode(`"${label}" verwijderen?`))){
+            Highlights.splice(del, 1);
+            postData({'highlights': Highlights});
+        }
+    }
+    function markHighlight(label) {
+        if (label=='') return;
+        Highlights.push(new Highlight(id++, formatStartTime(new Date()), label))
+    }
+    function showHighlights() {
+        var buffer = ''
+        Highlights.forEach((x, i) => {
+            line =
+                `<tr>` +
+                    `<td class=id>${x.id}.</td>`+
+                    `<td class=timestamp>${x.timestamp}</td>`+
+                    `<td class=label>${x.label}</td>`+
+                    `<td class=remove onclick='deleteHighlight(${x.id});showHighlights();'>&#10060;</td>`+
+                `</tr>
+                `;
+            buffer = `${buffer}${line}`
+        });
+        $('#highlight-list').html(buffer);
+    }
+    function formatStartTime(start_time, incl_seconds=true) {
+        let hhmm = `${start_time.getHours()}:${(start_time.getMinutes() < 10 ? '0' : '') + start_time.getMinutes()}`
+        let ss = `:${(start_time.getSeconds() < 10 ? '0' : '') + start_time.getSeconds()}`
+        if (incl_seconds) {
+            return `${hhmm}${ss}`
+        }
+        return `${hhmm}`
+    }
+    function postData(data) {
+        $.ajax({
+            url: "/ajax",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function(data, textStatus, jqXHR) {
+                console.log(data)
+            }
+        });
+    }
+    function clearTextSelection() {
+        if (window.getSelection) {
+            if (window.getSelection().empty) {  // Chrome
+                window.getSelection().empty();
+            } else if (window.getSelection().removeAllRanges) {  // Firefox
+                window.getSelection().removeAllRanges();
+        }
+        } else if (document.selection) {  // IE?
+            document.selection.empty();
+        }
+    }
+    
+    $( document ).ready(function()
+    {
+
+        {% for highlight in data.highlights %}
+        Highlights.push(new Highlight({{ highlight.id }}, '{{ highlight.timestamp }}', '{{ highlight.label }}'));
+        {% endfor %}
+        showHighlights();
+
+        $('#startPicker').timepicker({
+            'timeFormat': 'H:i',
+            'listWidth': 1,
+            'step': 10,
+            'disableTextInput': true,
+            'scrollDefault': 'now' });
+
+        $('#endPicker').timepicker({
+            'timeFormat': 'H:i',
+            'listWidth': 1,
+            'step': 10,
+            'disableTextInput': true,
+            'scrollDefault': 'now' });
+
+        $('#setStartButton').on('click', function (){
+            var start_time = $('#startPicker').timepicker('getTime');
+            if (start_time) {
+                $('#startTime').html(formatStartTime(start_time, false));
+                postData({'session_start': formatStartTime(start_time, false)})
+                // console.log(start_time);
+            }});
+
+        $('#setEndButton').on('click', function (){
+            var end_time = $('#endPicker').timepicker('getTime');
+            if (end_time) {
+                $('#endTime').html(formatStartTime(end_time, false));
+                postData({'session_end': formatStartTime(end_time, false)})
+                // console.log(end_time);
+            }});
+
+        $('#today').on('change', function (){
+            var today = $('#today').val();
+            if (today) {
+                postData({'today': today})
+                // console.log(today);
+            }});
+    })
+</script> 
+
+<body>
+    <h2>Lowlands EmbracePlus monitor</h2>
+
+    <div>
+        Server data root dir: {{ data.data_root_dir }}
+    </div>
+
+    <div>
+        <h3>Devices</h3>
+        <table>
+            <tr>
+                <td>ID</td>
+                <td>S/N</td>
+                <td>data</td>
+            </tr>
+            {% for device_id in data.device_ids %}
+            <tr>
+                <td>{{ device_id.id }}</td>
+                <td>{{ device_id.serial }}</td>
+                <td class="centre">
+                    {% if device_id.serial in data.devices_with_data %}
+                    <a href="/device/{{ device_id.id }}" target="window_{{ device_id.id }}">&#128269;</a>
+                    {% else %}
+                    (no data)
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}    
+        </table>
+    </div>
+
+    <div>
+        <span class="pointable" ondblclick="$('#today').attr('disabled', !$('#today').attr('disabled'));clearTextSelection();" title="Dubbelklik om dag te editen">Dag</span>:
+            <input type="date" id="today" value="{{ data.session.today }}" disabled="disabled" />
+            <br />
+
+        Sessie start:
+            <input id="startPicker" type="text" class="timePicker time" placeholder="klik"/>
+            <input type="button" id="setStartButton" value="set" /> 
+            <span id="startTime">{{ data.session.start }}</span>
+            <br />
+
+        Sessie einde:
+            <input id="endPicker" type="text" class="timePicker time" placeholder="klik"/>
+            <input type="button" id="setEndButton" value="set" />
+            <span id="endTime">{{ data.session.end }}</span>
+    </div>
+    <div>
+        Markeer highlight: <input type="text" id="highlight-label" placeholder="label"> 
+        <input type="button" value="markeer" onclick="
+            markHighlight($('#highlight-label').val());
+            postData({'highlights': Highlights});
+            showHighlights();
+            $('#highlight-label').val('');">
+        <table id="highlight-list">
+        </table>
+
+    </div>
+
+</body>
+</html>

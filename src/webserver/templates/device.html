@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<head>
+    <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}" charset="utf-8"></script> 
+    <script src="{{ url_for('static', filename='js/d3.js') }}" charset="utf-8"></script> 
+    <script src="{{ url_for('static', filename='js/plot.js') }}" charset="utf-8"></script> 
+</head>
+<style>
+    .topcorner{
+      position:absolute;
+      top:0;
+      right:0;
+      padding: 10px 10px 0 0;
+     }
+</style>
+<body>
+    <div id="load-status" class="topcorner"></div>
+    <div class="plot" id="eda-plot"></div>
+    <div class="plot" id="pulse-rate-plot"></div>
+</body>
+<script>
+    const eda_div = document.querySelector("#eda-plot");
+    const pulse_div = document.querySelector("#pulse-rate-plot");
+
+    var data_url = '{{ data.data_url|safe }}'
+    var session_data
+
+    var reloads = 0
+
+    function makePlot(data, colors, axis, titles)
+    {
+        let plot = {
+            title: titles.title, 
+            subtitle: titles.subtitle, 
+            caption: titles.caption,
+            marginTop: 42,
+            marginRight: 27,
+            marginBottom: 59,
+            marginLeft: 39,
+            grid: true,  
+            x: {type: "time", label: axis.x},
+            y: {label: axis.y},
+            
+            marks: [
+                // Plot.frame({stroke: "grey"}),
+                Plot.line(data, {x: "timestamp", y: "value", stroke: colors.value}),
+                Plot.line(data, {x: "timestamp", y: "average", stroke: colors.average}),
+            ]
+        }
+
+        return Plot.plot(plot)
+    }
+    function makePlots()
+    {
+        eda_div.innerHTML = '';
+        eda_div.append(makePlot(
+            session_data.eda,
+            { value: "red", average: "green" },
+            { x: "Time", y: "microSiemens (μS)" },
+            { title: `MAIN TITLE (${reloads})`, subtitle: "Electrodermal Activity", caption: "Fig 1. This is the EDA during the session" },
+        ));
+
+        pulse_div.innerHTML = '';
+        pulse_div.append(makePlot(
+            session_data.pulse_rate,
+            { value: "blue", average: "green"},
+            { x: "Time", y: "Beats per minute" },
+            { subtitle: "Pulse rate", caption: "Fig 2. This is the pulse rate during the session" },
+        ));
+    }
+    function loadData()
+    {
+        $("#load-status").html("&#10227;").show();
+        $.getJSON(data_url,
+            function(data)
+            {
+                for (var prop in data) {
+                    if (data.hasOwnProperty(prop)) {
+                        for (ele in data[prop]) {
+                            data[prop][ele].timestamp = new Date(data[prop][ele].timestamp);
+                        }
+                    }                    
+                }                
+                session_data = data;
+                reloads += 1;
+                makePlots();
+                $("#load-status").fadeOut(333);
+            }); 
+        setTimeout("loadData()", {{ data.data_reload }});
+    }
+    $(window).on("load", function ()
+    {
+        loadData();
+    });
+</script>
+
+</html>

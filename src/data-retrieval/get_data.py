@@ -1,7 +1,7 @@
-import sys
 import boto3
 import json
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -35,14 +35,22 @@ class CarePortalDataDownloader:
         else:
             self.monitor_date = monitor_date
 
+
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
-        self.download_objects()
+
+        if self.monitor_date=='*':
+            for file in self.get_csv_objects():
+                print(file)
+        else:
+            print(f"Files for {self.monitor_date}")
+            self.download_objects()
 
     def get_csv_objects(self):
         objects = []
         for my_bucket_object in self.bucket.objects.filter(Prefix=self.prefix):
-            if my_bucket_object.key[-4:]==".csv" and my_bucket_object.key.split("/")[5]==self.monitor_date:
+            if my_bucket_object.key[-4:]==".csv" and \
+                (self.monitor_date=='*' or my_bucket_object.key.split("/")[5]==self.monitor_date):
                 objects.append(my_bucket_object.key)
 
         return objects
@@ -61,16 +69,20 @@ class CarePortalDataDownloader:
                 print(f"Download failed: {object} ({str(e)})")
 
 if __name__=="__main__":
-    
+
+    monitor_date = None
+
     if len(sys.argv)>1:
         try:
-            monitor_date = datetime.strptime(sys.argv[1], '%Y-%m-%d').replace(tzinfo=timezone.utc).strftime('%Y-%m-%d')
-            print(f"Force date {monitor_date}")
+            if sys.argv[1]=='show-all':
+                monitor_date = '*'
+            else:
+                monitor_date = datetime.strptime(sys.argv[1], '%Y-%m-%d').replace(tzinfo=timezone.utc).strftime('%Y-%m-%d')
         except:
-            print("Force date format: 'YYYY-MM-DD'\nExiting")
-            exit()
-    else:
-        monitor_date = None
+            print("To retrieve files for today:            python get_data.py")
+            print("To retrieve files for a specific date:  python get_data.py <YYYY-MM-DD>")
+            print("For a list of available .CSV-files:     python get_data.py show-all")
+            exit(0)
 
     aws_cfg_file = os.getenv('AWS_CFG_FILE')
     data_dir = os.getenv('DATA_DIR', '/data/lowlands')
@@ -79,4 +91,3 @@ if __name__=="__main__":
         aws_cfg_file=aws_cfg_file, 
         data_dir=data_dir,
         monitor_date=monitor_date)
-    

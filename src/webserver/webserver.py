@@ -1,36 +1,30 @@
 import csv
+import json
 import os
-import statistics
 from datetime import datetime, timezone
-from flask import Flask
+from flask import Flask, render_template, request
 from pathlib import Path
 from statistics import fmean
 
-app = Flask(__name__)
+def write_settings(settings):
+    with open(cfg_file, 'w') as f:
+        json.dump(settings, f)
 
-data_root_dir = os.getenv('DATA_DIR', '/data/lowlands')
-monitor_date = os.getenv('MONITOR_DATE', datetime.now().strftime("%Y-%m-%d"))
-session_start = '2024-05-02T09:29:00Z'
-session_end = '2024-05-02T10:12:00Z'
+def read_settings():
+    with open(cfg_file) as f:
+        settings = json.load(f)
+    return settings
 
-device_ids = [
-    {'serial': '3YK3K152F5', 'id': '123'},
-    {'serial': '7WA2U178X5', 'id': '342'},
-    {'serial': '4ZL4L263G6', 'id': '579'},
-    {'serial': '4Y76BHY33Z', 'id': '199'},
-]
+def set_settings(data):
+    settings = read_settings()
+    for key in data.keys():
+        if key in ['start_time', 'end_time']:
+            settings[key] = f"{settings['today']}T{data[key]}:00Z"
+        else:
+            settings[key] = data[key]
+    write_settings(settings)
 
-# session_length_min = 30
-# buffer_length_min = 5
-# the_now = datetime.now(timezone.utc)
-
-print(data_root_dir)
-print(monitor_date)
-print(session_start)
-print(session_end)
-print(device_ids)
-
-def get_device_serial(device_id):
+def get_device_serial(device_ids, device_id):
     device = [x for x in device_ids if x['id']==device_id]
     if len(device)!=1:
         return
@@ -38,24 +32,25 @@ def get_device_serial(device_id):
 
 class DeviceSessionData:
 
-    # [(var name, column header), ... ]
-    characteristics = [('eda', 'eda_scl_usiemens'), ('pulse-rate', 'pulse_rate_bpm')]
+    # [(var name, csv column header, json var name ), ... ]
+    characteristics = [('eda', 'eda_scl_usiemens', 'eda'), ('pulse-rate', 'pulse_rate_bpm', 'pulse_rate')]
 
-    def __init__(self,
-                 data_root_dir,
-                 monitor_date,
-                 device=None,
-                 session_start=None,
-                 session_end=None) -> None:
-        self.data_dir = Path(data_root_dir) / Path(monitor_date)
+    def __init__(self, 
+                 settings,
+                 device=None) -> None:
         self.device = device
-        if session_start and session_end:
+        self.data_dir = Path(settings['data_root_dir']) / Path(settings['today'])
+
+        if self.data_dir.exists():
             self.session_data = self.retrieve_session_data(
                 devices=self.get_devices(data_dir=self.data_dir),
                 chars=self.characteristics,
-                session_start=self.to_timestamp(session_start), 
-                session_end=self.to_timestamp(session_end))
+                session_start=self.to_timestamp(f"{settings['today']}T{settings['session_start']}:00Z"), 
+                session_end=self.to_timestamp(f"{settings['today']}T{settings['session_end']}:00Z")
+            )
             self.session_averages = self.calculate_averages()
+        # else:
+        #     raise FileNotFoundError(str(self.data_dir))
     
     @staticmethod
     def to_timestamp(string):
@@ -90,7 +85,7 @@ class DeviceSessionData:
             s_data[device] = {}
             for char in chars:
                 d_data = self.get_device_data(device=device, char=char)
-                s_data[device][char[0]] = [x for x in d_data if x['timestamp'] >= session_start and x['timestamp'] <= session_end]
+                s_data[device][char[2]] = [x for x in d_data if x['timestamp'] >= session_start and x['timestamp'] <= session_end]
         return s_data
 
     def calculate_averages(self):
@@ -98,58 +93,113 @@ class DeviceSessionData:
         for device in self.session_data.copy():
             for key in self.session_data[device]:
                 d_data = self.session_data[device][key]
+
                 if key not in averages:
                     averages[key] = [{'timestamp': x['timestamp'], 'val': []} for x in d_data]
+
                 for ts in averages[key]:
                     ts['val'].append([x['val'] for x in d_data if x['timestamp']==ts['timestamp']][0])
-
-        for key in averages.copy():
-            averages[key] = [{'timestamp': x['timestamp'], 'val': fmean(ts['val'])} for x in averages[key]]
+        
+        for key in averages:
+            averages[key] = [{'timestamp': x['timestamp'], 'val': fmean(x['val'])} for x in averages[key]]
         
         return averages
-
 
     def get_session_data(self, device=None):
         if device:
             return { 'data': self.session_data[device], 'averages': self.session_averages } 
         return { 'data': self.session_data, 'averages': self.session_averages } 
 
+cfg_file = "./config.json"
+app = Flask(__name__)
+
 @app.route('/')
 def root():
-    dsd = DeviceSessionData(
-        data_root_dir = data_root_dir,
-        monitor_date = monitor_date,
-        session_start = session_start,
-        session_end = session_end
-    )
+    dsd = DeviceSessionData(settings=read_settings())
     return dsd.get_session_data()
+
+@app.route('/admin')
+def admin():
+    settings = read_settings()
+    dsd = DeviceSessionData(settings=settings)
+    data = {
+        'data_root_dir': settings['data_root_dir'],
+        'device_ids': settings['device_ids'],
+        'devices_with_data': dsd.get_devices(dsd.data_dir),
+        'session': {
+            'today': settings['today'],
+            'start': settings['session_start'],
+            'end': settings['session_end']
+        },
+        'highlights': settings['highlights'] if 'highlights' in settings else []
+    }
+
+    return render_template('admin.html', data=data)
+
+@app.route('/data/<device_id>')
+def data(device_id):
+    settings = read_settings()
+    device_serial = get_device_serial(device_ids=settings['device_ids'], device_id=device_id)
+    dsd = DeviceSessionData(settings=settings)
+
+    if not device_serial:
+        data = f"device {device_id} not found"
+        status = 404
+    else:
+        session_data = dsd.get_session_data(device=device_serial)
+        data = {}
+        status = 200
+        for char in session_data['data']:
+            
+            data[char] = [
+                {
+                    'timestamp': x['timestamp'].strftime("%Y-%m-%d %H:%M"),
+                    'value': x['val'],
+                    'average': [y['val'] for y in session_data['averages'][char] if y['timestamp']==x['timestamp']][0]
+                } for x in session_data['data'][char]]
+
+    response = app.response_class(
+        response=json.dumps(data),
+        status=status,
+        mimetype='application/json'
+    )
+
+    return response
 
 @app.route('/device/<device_id>')
 @app.route('/device/<device_id>/')
 def device(device_id):
-    device_serial = get_device_serial(device_id)
+    settings = read_settings()
+    device_serial = get_device_serial(device_ids=settings['device_ids'], device_id=device_id)
     if not device_serial:
         return f"device {device_id} not found"
+    data = {
+        'data_url': f'/data/{device_id}',
+        'data_reload': 5000
+    }
+    return render_template('device.html', data=data)
 
-    dsd = DeviceSessionData(
-        data_root_dir = data_root_dir,
-        monitor_date = monitor_date,
-        session_start = session_start,
-        session_end = session_end
-    )
 
-    return dsd.get_session_data(device=device_serial)
-
-@app.route('/devices')
-def devices():
-    dsd = DeviceSessionData(
-        data_root_dir = data_root_dir,
-        monitor_date = monitor_date
-    )
-    return {'devices_with_data': dsd.get_devices(dsd.data_dir), 'device_ids': device_ids}
+@app.route('/ajax', methods = ['POST'])
+def ajax():
+    data = request.json
+    set_settings(data)
+    return read_settings()
 
 if __name__ == '__main__':
+    if not Path(cfg_file).exists():
+        write_settings({
+            'data_root_dir': os.getenv('DATA_DIR', '/data/lowlands'),
+            'today': datetime.now().strftime("%Y-%m-%d"),
+            'session_start': '2024-05-02T09:29:00Z',
+            'session_end': '2024-05-02T10:12:00Z',
+            'device_ids': [
+                {'serial': '3YK3K152F5', 'id': '735'},
+                {'serial': '7WA2U178X5', 'id': '974'},
+                {'serial': '4ZL4L263G6', 'id': '465'},
+                {'serial': '4Y76BHY33Z', 'id': '370'},
+            ],
+            'highlights': []
+        })
+    print(read_settings())
     app.run(host='0.0.0.0', debug=True)
-
-
-# if x['timestamp'] > datetime.now(timezone.utc) - timedelta(minutes=session_length+buffer_length) and b < now - timedelta(minutes=buffer_length) ]
