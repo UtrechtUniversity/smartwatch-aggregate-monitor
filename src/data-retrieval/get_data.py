@@ -85,7 +85,7 @@ if __name__=="__main__":
             exit(0)
 
     aws_cfg_file = os.getenv('AWS_CFG_FILE')
-    data_dir = os.getenv('DATA_DIR', '/data/lowlands')
+    data_dir = os.getenv('DATA_DIR', '../../data/raw/')
 
     cpd = CarePortalDataDownloader(
         aws_cfg_file=aws_cfg_file, 

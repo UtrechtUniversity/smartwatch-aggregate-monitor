@@ -189,7 +189,7 @@ def ajax():
 if __name__ == '__main__':
     if not Path(cfg_file).exists():
         write_settings({
-            'data_root_dir': os.getenv('DATA_DIR', '/data/lowlands'),
+            'data_root_dir': os.getenv('DATA_DIR', '../../data/raw/'),
             'today': datetime.now().strftime("%Y-%m-%d"),
             'session_start': '2024-05-02T09:29:00Z',
             'session_end': '2024-05-02T10:12:00Z',
