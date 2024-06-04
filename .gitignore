@@ -135,4 +135,5 @@ dmypy.json
 
 # other
 /src/proof-of-concept/set_env.sh
+/src/webserver/config.json
 
