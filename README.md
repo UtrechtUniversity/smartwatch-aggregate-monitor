@@ -1,42 +1,43 @@
-# re-simple-python-project
+# Smartwatch aggregate monitor
 
-This simple project structure template repository is adapted from the [Good Enough Project](https://github.com/bvreede/good-enough-project) Cookiecutter template by Barbara Vreede (2019).
-If you plan to develop a package, check the [template repository for a Python package](https://github.com/UtrechtUniversity/re-python-package).
+Program designed to harvest aggregated biomarker data collected from EmbracePlus wearables via an instance of Empatica's Care Portal, and display them as simple time series graphs.
 
 ## Usage
 
-Click "Use this template" at the top of this page to create a new repository with the same folder structure.
+### Prerequisites
 
-## Project Structure
+The Empatica Care Portal writes data to an AWS S3 bucket. In order to download the data, you require credentials for accessing the bucket. You need three pieces of information, which are provided by Empatica as part of a license:
 
-The project structure distinguishes three kinds of folders:
-- read-only (RO): not edited by either code or researcher
-- human-writeable (HW): edited by the researcher only.
-- project-generated (PG): folders generated when running the code; these folders can be deleted or emptied and will be completely reconstituted as the project is run.
++ s3_path
++ my_aws_access_key_id
++ my_aws_secret_access_key
+
+Store these as key-value pairs in a JSON-file (for instance `aws_config.json`) and set its path as an environment variable `AWS_CFG_FILE`. Next, create a folder to hold the downloaded data, and set its path as an environment variable as well (if you omit this, the program will default to the `/data/raw` folder of this repo).
 
 
-```
-.
-├── .gitignore
-├── LICENSE
-├── README.md
-├── requirements.txt
-├── data               <- All project data, ignored by git
-│   ├── processed      <- The final, canonical data sets for modeling. (PG)
-│   ├── raw            <- The original, immutable data dump. (RO)
-│   └── temp           <- Intermediate data that has been transformed. (PG)
-├── docs               <- Documentation notebook for users (HW)
-│   ├── manuscript     <- Manuscript source, e.g., LaTeX, Markdown, etc. (HW)
-│   └── reports        <- Other project reports and notebooks (e.g. Jupyter, .Rmd) (HW)
-├── results
-│   ├── figures        <- Figures for the manuscript or reports (PG)
-│   └── output         <- Other output for the manuscript or reports (PG)
-└── src                <- Source code for this project (HW)
-
+```bash
+export AWS_CFG_FILE='/path/to/aws_config.json'
+export DATA_DIR='/path/to/data'
 ```
 
-## Add a citation file
-Create a citation file for your repository using [cffinit](https://citation-file-format.github.io/cff-initializer-javascript/#/)
+### Harvest data
+
+Run 
+```bash
+python src/data-retrieval/get_data.py
+```
+to harvest data.  Options:
+
++ To retrieve files for today: `python get_data.py`
++ To retrieve files for a specific date: `python get_data.py <YYYY-MM-DD>`
++ For a list of available .CSV-files: `python get_data.py show-all`
+
+Ideally, this process is scheduled so the 
+
+
+
+
+Run `webserver/webserver.py` to present data. 
 
 ## License
 

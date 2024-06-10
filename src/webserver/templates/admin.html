@@ -5,230 +5,151 @@
     <title>Lowlands EmbracePlus monitor</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery.timepicker.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fonts/inter.css') }}">
+    <script src="{{ url_for('static', filename='js/admin.js') }}" charset="utf-8"></script> 
     <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}" charset="utf-8"></script> 
     <script src="{{ url_for('static', filename='js/jquery.timepicker.min.js') }}" charset="utf-8"></script> 
 </head>
-<style>
-    body {
-        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-        color: #0c0c0c;
-        background-color: #fafffa;
-        overflow-x: hidden;
-    }
-
-    div {
-        margin-bottom: 10px;;
-    }
-    table tr td.centre {
-        text-align: center;
-    }
-    table tr td a {
-        text-decoration: none;
-    }
-    #highlight-list tr:hover {
-        background-color: #eee;
-    }
-    #highlight-list tr td.remove {
-        cursor: pointer;
-    }
-    .pointable, input[type=button] {
-        cursor: pointer;
-    }
-    .timePicker {
-        background-color: #efefef;
-        width: 50px;
-        cursor: pointer;
-    }
-</style>
 <script>
+const data_url = "{{ data.data_url|safe }}"
+const data_reload = {{ data.data_reload }}
 
-    // https://www.jonthornton.com/jquery-timepicker/
-    // https://github.com/jonthornton/jquery-timepicker#timepicker-plugin-for-jquery
-
-    var id = 1
-    const Highlights = []
-    
-    class Highlight {
-        constructor(id, timestamp, label) {
-            this.timestamp = timestamp;
-            this.label = label;
-            this.id = id;
-        }
-    }
-
-    function htmlDecode(input) {
-        var doc = new DOMParser().parseFromString(input, "text/html");
-        return doc.documentElement.textContent;
-    }    
-    function deleteHighlight(id) {    
-        var del = -1
-        var label = ''
-        Highlights.forEach((x, i) => {
-            if (x.id==id) {
-                del = i;
-                label = x.label
-            }
-        })
-        if (del>-1 && window.confirm(htmlDecode(`"${label}" verwijderen?`))){
-            Highlights.splice(del, 1);
-            postData({'highlights': Highlights});
-        }
-    }
-    function markHighlight(label) {
-        if (label=='') return;
-        Highlights.push(new Highlight(id++, formatStartTime(new Date()), label))
-    }
-    function showHighlights() {
-        var buffer = ''
-        Highlights.forEach((x, i) => {
-            line =
-                `<tr>` +
-                    `<td class=id>${x.id}.</td>`+
-                    `<td class=timestamp>${x.timestamp}</td>`+
-                    `<td class=label>${x.label}</td>`+
-                    `<td class=remove onclick='deleteHighlight(${x.id});showHighlights();'>&#10060;</td>`+
-                `</tr>
-                `;
-            buffer = `${buffer}${line}`
-        });
-        $('#highlight-list').html(buffer);
-    }
-    function formatStartTime(start_time, incl_seconds=true) {
-        let hhmm = `${start_time.getHours()}:${(start_time.getMinutes() < 10 ? '0' : '') + start_time.getMinutes()}`
-        let ss = `:${(start_time.getSeconds() < 10 ? '0' : '') + start_time.getSeconds()}`
-        if (incl_seconds) {
-            return `${hhmm}${ss}`
-        }
-        return `${hhmm}`
-    }
-    function postData(data) {
-        $.ajax({
-            url: "/ajax",
-            type: "POST",
-            data: JSON.stringify(data),
-            contentType: "application/json",
-            success: function(data, textStatus, jqXHR) {
-                console.log(data)
-            }
-        });
-    }
-    function clearTextSelection() {
-        if (window.getSelection) {
-            if (window.getSelection().empty) {  // Chrome
-                window.getSelection().empty();
-            } else if (window.getSelection().removeAllRanges) {  // Firefox
-                window.getSelection().removeAllRanges();
-        }
-        } else if (document.selection) {  // IE?
-            document.selection.empty();
-        }
-    }
-    
-    $( document ).ready(function()
-    {
-
-        {% for highlight in data.highlights %}
-        Highlights.push(new Highlight({{ highlight.id }}, '{{ highlight.timestamp }}', '{{ highlight.label }}'));
-        {% endfor %}
-        showHighlights();
-
-        $('#startPicker').timepicker({
-            'timeFormat': 'H:i',
-            'listWidth': 1,
-            'step': 10,
-            'disableTextInput': true,
-            'scrollDefault': 'now' });
-
-        $('#endPicker').timepicker({
-            'timeFormat': 'H:i',
-            'listWidth': 1,
-            'step': 10,
-            'disableTextInput': true,
-            'scrollDefault': 'now' });
-
-        $('#setStartButton').on('click', function (){
-            var start_time = $('#startPicker').timepicker('getTime');
-            if (start_time) {
-                $('#startTime').html(formatStartTime(start_time, false));
-                postData({'session_start': formatStartTime(start_time, false)})
-                // console.log(start_time);
-            }});
-
-        $('#setEndButton').on('click', function (){
-            var end_time = $('#endPicker').timepicker('getTime');
-            if (end_time) {
-                $('#endTime').html(formatStartTime(end_time, false));
-                postData({'session_end': formatStartTime(end_time, false)})
-                // console.log(end_time);
-            }});
-
-        $('#today').on('change', function (){
-            var today = $('#today').val();
-            if (today) {
-                postData({'today': today})
-                // console.log(today);
-            }});
-    })
+$( document ).ready(function()
+{
+    $('#startPicker').timepicker({
+        'timeFormat': 'H:i',
+        'listWidth': 1,
+        'step': 10,
+        'disableTextInput': true,
+        'scrollDefault': 'now' });
+    $('#endPicker').timepicker({
+        'timeFormat': 'H:i',
+        'listWidth': 1,
+        'step': 10,
+        'disableTextInput': true,
+        'scrollDefault': 'now' });
+    // $('#setStartNow').on('click', function () {setSomeTime(new Date, 'session_start', '#startTime')})
+    // $('#setEndNow').on('click', function () {setSomeTime(new Date, 'session_end', '#endTime')})
+    $('#setStartButton').on('click', function () {setSomeTime($('#startPicker').timepicker('getTime'), 'session_start', '#startTime');$("#startPicker").val('')})
+    $('#setEndButton').on('click', function () {setSomeTime($('#endPicker').timepicker('getTime'), 'session_end', '#endTime');$("#endPicker").val('')})
+    $('#today').on('change', function (){
+        var today = $('#today').val();
+        if (today) postData({'today': today});
+    });
+    $('#showGraphs').on('click', function (){
+        if (today) postData({'show_graphs': $('#showGraphs').is(":checked")});
+    });
+    loadData();
+})
 </script> 
-
 <body>
-    <h2>Lowlands EmbracePlus monitor</h2>
+    <div id="load-status" class="bottomcorner"></div>
 
-    <div>
-        Server data root dir: {{ data.data_root_dir }}
+    <h1>Lowlands EmbracePlus monitor</h1>
+
+    <div class="section">
+        <h2>Sessie</h2>
+
+        <div class="session">
+            <div>Dag:</div>
+            <div>
+                <input type="date" id="today" value="" disabled="disabled" />
+                <input type="button" onclick="
+                    $('#today').attr('disabled', !$('#today').attr('disabled'));
+                    $(this).attr('value',$('#today').attr('disabled') ? 'edit' : 'done' );
+                    " value="edit">
+            </div>
+        </div>
+
+        <div class="session">
+            <div>Start:</div>
+            <div>
+                <!-- <input class="set-button" type="button" id="setStartNow" value="Nu starten" /> 
+                of kies tijd: -->
+                <input id="startPicker" type="text" class="timePicker time" placeholder="klik"/>
+                <input class="set-button" type="button" id="setStartButton" value="Instellen" /> 
+                <span id="startTime"></span>
+            </div>
+        </div>
+
+        <div class="session">
+            <div>Einde:</div>
+            <div>
+                <!-- <input class="set-button" type="button" id="setEndNow" value="Nu stoppen" /> 
+                of kies tijd: -->
+                <input id="endPicker" type="text" class="timePicker time" placeholder="klik"/>
+                <input class="set-button" type="button" id="setEndButton" value="Instellen" />
+                <span id="endTime"></span>
+            </div>
+        </div>
     </div>
 
-    <div>
-        <h3>Devices</h3>
+    <div class="section">
+        <h2>Grafieken</h2>
+        
+        <div class="session">
+            <div>
+                Verbergen
+                <label class="switch">
+                    <input type="checkbox" id="showGraphs" value="show_graphs">
+                    <span class="slider round"></span>
+                </label>
+                Tonen
+            </div>
+        </div>
+
+    </div>
+
+    <div class="section">
+        <h2>Highlights</h2>
+
+        <div>
+            Stel in: <input type="text" id="highlight-label" placeholder="label"> 
+            <input type="button" value="markeer" onclick="
+                markHighlight($('#highlight-label').val());
+                postData({'highlights': Highlights});
+                showHighlights();
+                $('#highlight-label').val('');">
+        </div>
+        <div>
+            <table>
+                <thead>
+                    <th>ID</th>
+                    <th>Timestamp</th>
+                    <th>Label</th>
+                    <th></th>
+                </thead>
+                <tbody id="highlight-list">
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <input type="button" value="Download" onclick="exportHighlights()">
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Devices</h2>
         <table>
-            <tr>
-                <td>ID</td>
-                <td>S/N</td>
-                <td>data</td>
-            </tr>
-            {% for device_id in data.device_ids %}
-            <tr>
-                <td>{{ device_id.id }}</td>
-                <td>{{ device_id.serial }}</td>
-                <td class="centre">
-                    {% if device_id.serial in data.devices_with_data %}
-                    <a href="/device/{{ device_id.id }}" target="window_{{ device_id.id }}">&#128269;</a>
-                    {% else %}
-                    (no data)
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}    
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>S/N</th>
+                    <th>password</th>
+                    <th>last poll</th>
+                    <th>data</th>
+                </tr>
+            </thead>
+            <tbody id="device-list">
+            </tbody>
         </table>
     </div>
 
-    <div>
-        <span class="pointable" ondblclick="$('#today').attr('disabled', !$('#today').attr('disabled'));clearTextSelection();" title="Dubbelklik om dag te editen">Dag</span>:
-            <input type="date" id="today" value="{{ data.session.today }}" disabled="disabled" />
-            <br />
+    <!-- <div>
+        Server data dir: <span id="data_dir"></span>
+    </div> -->
 
-        Sessie start:
-            <input id="startPicker" type="text" class="timePicker time" placeholder="klik"/>
-            <input type="button" id="setStartButton" value="set" /> 
-            <span id="startTime">{{ data.session.start }}</span>
-            <br />
-
-        Sessie einde:
-            <input id="endPicker" type="text" class="timePicker time" placeholder="klik"/>
-            <input type="button" id="setEndButton" value="set" />
-            <span id="endTime">{{ data.session.end }}</span>
-    </div>
-    <div>
-        Markeer highlight: <input type="text" id="highlight-label" placeholder="label"> 
-        <input type="button" value="markeer" onclick="
-            markHighlight($('#highlight-label').val());
-            postData({'highlights': Highlights});
-            showHighlights();
-            $('#highlight-label').val('');">
-        <table id="highlight-list">
-        </table>
-
-    </div>
 
 </body>
 </html>

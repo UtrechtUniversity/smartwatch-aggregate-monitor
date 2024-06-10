@@ -1,0 +1,50 @@
+:root {
+  font-family: Inter, sans-serif;
+  font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
+}
+@supports (font-variation-settings: normal) {
+  :root { font-family: InterVariable, sans-serif; }
+}
+
+h1 {
+    font-weight: 350;
+}
+h2 {
+    font-weight: 350;
+}
+h3 {
+    font-weight: 350;
+}
+figcaption {
+    font-weight: 100;
+    font-style: italic;
+}
+div.main-title {
+    margin-left: 40px;
+}
+div.plot {
+    display: inline-block;
+    width: 45%;
+    vertical-align: text-top;
+}
+div.text {
+    font-size: small;
+    padding: 5px 25px 10px 35px;
+}
+.topcorner {
+    width: 160px;
+    height: 100px;;
+    background-size: cover;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0;
+    background-image: url("{{ url_for('static', filename='img/cm_hs_new_logo_2021.png') }}");
+    background-repeat: no-repeat;
+}
+.bottomcorner {
+    position:absolute;
+    bottom:0;
+    left:0;
+    padding: 0 0 10px 10px;
+}

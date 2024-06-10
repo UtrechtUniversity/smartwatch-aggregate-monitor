@@ -1,0 +1,19 @@
+services:
+  web:
+    image: "test:test"
+    stop_signal: SIGINT
+    ports:
+      - "8000:5000"
+    environment:
+      - DATA_DIR=/data
+      - CFG_FILE=/config/config.json
+      - DEVICES_FILE=/config/devices.json
+      - ADMIN_PASS=tralala
+      - DEBUG=1
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - /data/lowlands/config:/config
+      - /data/lowlands/data:/data
+    deploy:
+      restart_policy:
+        condition: any
