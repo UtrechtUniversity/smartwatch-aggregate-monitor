@@ -132,7 +132,6 @@ function loadData() {
                 'labels': data.highlights.map(({ label }) => label),
                 'timestamps': data.highlights.map(({ timestamp }) => timestamp)
             }
-            console.log(show_graphs)
             makePlots(data);
             $("#load-status").fadeOut(555);
             reloads += 1;

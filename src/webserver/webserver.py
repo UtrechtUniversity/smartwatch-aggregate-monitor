@@ -62,6 +62,27 @@ def get_device_serial(devices, device_id):
         return
     return device[0]['serial']
 
+def get_admin_data():
+    def add_meta_data(dict, devices_with_data):
+        dict['latest_request']=get_latest_request(device_id=dict['id'])
+        dict['has_data']=dict['serial'] in devices_with_data
+        return dict
+
+    settings = get_settings()
+    dsd = DeviceSessionData(settings=settings)
+    data = {
+        'show_graphs': settings['show_graphs'],
+        'data_dir': settings['data_dir'],
+        'devices': [add_meta_data(dict=x, devices_with_data=dsd.get_devices(dsd.data_dir)) for x in get_devices()],
+        'session': {
+            'today': settings['today'],
+            'start': settings['session_start'],
+            'end': settings['session_end']
+        },
+        'highlights': settings['highlights'] if 'highlights' in settings else []
+    }
+    return data
+
 class DeviceSessionData:
 
     # [(var name, csv column header, json var name ), ... ]
@@ -160,38 +181,17 @@ def root():
 def admin():
     data = {
         'data_url': f'/admin/data/',
-        'data_reload': 5000
+        'data_reload': 30000
     }
     return render_template('admin.html', data=data)
 
 @app.route('/admin/data/')
 def admin_data():
-
-    def add_meta_data(dict, devices_with_data):
-        dict['latest_request']=get_latest_request(device_id=dict['id'])
-        dict['has_data']=dict['serial'] in devices_with_data
-        return dict
-
-    settings = get_settings()
-    dsd = DeviceSessionData(settings=settings)
-    data = {
-        'show_graphs': settings['show_graphs'],
-        'data_dir': settings['data_dir'],
-        'devices': [add_meta_data(dict=x, devices_with_data=dsd.get_devices(dsd.data_dir)) for x in get_devices()],
-        'session': {
-            'today': settings['today'],
-            'start': settings['session_start'],
-            'end': settings['session_end']
-        },
-        'highlights': settings['highlights'] if 'highlights' in settings else []
-    }
-
     response = app.response_class(
-        response=json.dumps(data),
+        response=json.dumps(get_admin_data()),
         status=200,
         mimetype='application/json'
     )
-
     return response
 
 @app.route('/data/<device_id>/')
@@ -257,7 +257,12 @@ def ajax():
     set_settings(data)
     settings=get_settings()
     del settings['admin']
-    return settings
+    response = app.response_class(
+        response=json.dumps(get_admin_data()),
+        status=200,
+        mimetype='application/json'
+    )
+    return response
 
 if __name__ == '__main__':
 

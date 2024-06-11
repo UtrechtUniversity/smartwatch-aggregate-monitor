@@ -5,7 +5,8 @@ var Highlights = []
 var mask = '*****'
 
 class Highlight {
-    constructor(id, timestamp, label) {
+    constructor(id, date, timestamp, label) {
+        this.date = date;
         this.timestamp = timestamp;
         this.label = label;
         this.id = id;
@@ -34,7 +35,8 @@ function deleteHighlight(id) {
 
 function markHighlight(label) {
     if (label=='') return;
-    Highlights.push(new Highlight(id++, formatStartTime(new Date()), label))
+    Highlights.push(new Highlight(id++, $("#today").val(), formatStartTime(new Date()), label))
+    postData({'highlights': Highlights});
 }
 
 function showHighlights() {
@@ -100,48 +102,58 @@ function postData(data) {
         contentType: "application/json",
         success: function(data, textStatus, jqXHR)
         {
-            // console.log(data)
+            setData(data);
         }
     });
 }
 
-function setSomeTime(time, event, id) {
+function setSomeTime(time, event) {
     if (time) {
-        $(id).html(formatStartTime(time, false));
         var obj = {};
         obj[event] = formatStartTime(time, false);
         postData(obj)
-        // console.log(event, time);
     }
+}
+
+function setData(data) {
+    showDevices(data.devices);
+    Highlights = []
+    data.highlights.forEach((x, i) => {
+        Highlights.push(new Highlight(x.id, x.date, x.timestamp, x.label));
+    })
+    showHighlights();
+    $('#showGraphs').prop('checked', data.show_graphs)
+    // $('#data_dir').html(data.data_dir)
+    $("#startTime").html(data.session.start);
+    $("#endTime").html(data.session.end);
+    $("#today").val(data.session.today);
 }
 
 function loadData() {
     $("#load-status").html("&#10227;").show();
-    $.getJSON(data_url,
-        function(data)
-        {
-            console.log(data);
-            showDevices(data.devices);
-            Highlights = []
-            data.highlights.forEach((x, i) => {
-                Highlights.push(new Highlight(x.id, x.timestamp,x.label));
-            })
-            showHighlights();
-            $('#showGraphs').prop('checked', data.show_graphs)
-            // $('#data_dir').html(data.data_dir)
-            $("#startTime").html(data.session.start);
-            $("#endTime").html(data.session.end);
-            $("#today").val(data.session.today);
-            $("#load-status").fadeOut(555);
-        }); 
+    $.getJSON(data_url, function(data) {
+        setData(data)
+        $("#load-status").fadeOut(555);
+    }); 
     setTimeout("loadData()", data_reload);
 }
 
 function exportHighlights() {
-    var csvContent = "data:text/csv;charset=utf-8," 
-    Highlights.forEach((x,i)=> {
-        console.log(x,i);
-        csvContent = csvContent + `"${x.timestamp}","${x.label}"\n`;
-    })    
-    window.open(encodeURI(csvContent));
+    const blob = new Blob([csvmaker(Highlights)], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `lowlands-session-highlights--${new Date().toISOString()}.csv`;
+    a.click();    
+}
+
+function csvmaker(data) {
+    csvRows = [];
+    const headers = Object.keys(data[0]);
+    csvRows.push(headers.join(','));
+    data.forEach((x, i)=>{
+        let values = Object.values(x).join(',');
+        csvRows.push(values)    
+    })
+    return csvRows.join('\n')
 }

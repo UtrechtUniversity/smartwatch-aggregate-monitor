@@ -29,10 +29,10 @@ $( document ).ready(function()
         'step': 10,
         'disableTextInput': true,
         'scrollDefault': 'now' });
-    // $('#setStartNow').on('click', function () {setSomeTime(new Date, 'session_start', '#startTime')})
-    // $('#setEndNow').on('click', function () {setSomeTime(new Date, 'session_end', '#endTime')})
-    $('#setStartButton').on('click', function () {setSomeTime($('#startPicker').timepicker('getTime'), 'session_start', '#startTime');$("#startPicker").val('')})
-    $('#setEndButton').on('click', function () {setSomeTime($('#endPicker').timepicker('getTime'), 'session_end', '#endTime');$("#endPicker").val('')})
+    // $('#setStartNow').on('click', function () {setSomeTime(new Date, 'session_start')})
+    // $('#setEndNow').on('click', function () {setSomeTime(new Date, 'session_end')})
+    $('#setStartButton').on('click', function () {setSomeTime($('#startPicker').timepicker('getTime'), 'session_start');$("#startPicker").val('')})
+    $('#setEndButton').on('click', function () {setSomeTime($('#endPicker').timepicker('getTime'), 'session_end');$("#endPicker").val('')})
     $('#today').on('change', function (){
         var today = $('#today').val();
         if (today) postData({'today': today});
