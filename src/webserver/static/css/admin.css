@@ -11,10 +11,12 @@ body {
 }
 h1 {
     font-weight: 350;
+    margin: 10px 0 10px 0;
     border-bottom: 2px solid #999;
 }
 h2 {
     font-weight: 350;
+    margin: 5px 0 10px 0;
 }
 h3 {
     font-weight: 350;
@@ -43,9 +45,17 @@ th {
 .right {
     text-align: right;
 }
+.small {
+    font-size: 0.8em;
+}
 td a {
     text-decoration: none;
 }
+
+.device-list tr:last-child {
+    border-top-style: double;
+}
+
 #highlight-list tr:hover {
     background-color: #eee;
 }
@@ -63,7 +73,7 @@ td a {
 div.section {
     border-bottom: 1px solid #ccc;
     padding-bottom: 10px;
-    width: 600px;
+    width: 700px;
 }
 div.session > div {
     display: inline-block;
@@ -143,3 +153,43 @@ div.session > div {
   .slider.round:before {
     border-radius: 50%;
   } 
+
+div.doc {
+    font-size: 0.8em;
+}
+
+div.doc p {
+    margin: 8px 0 8px 0;
+}
+
+.doc-showing {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    margin: 5px 0 10px 0;
+    padding: 4px 10px 4px 10px;
+    padding-bottom: 0;
+    background-color: #fafafa;
+}
+
+div.doc div.text {
+    display: none;
+}
+
+div.doc div.toggle {
+    display: block;
+    cursor: pointer;
+    color: #666;
+}
+
+div.doc div.toggle:hover {
+    text-decoration: underline;
+}
+
+div.doc .title {
+    font-weight: bold;
+}
+
+div.doc div.text .topic {
+    font-style: italic;
+    color: #b00;
+}

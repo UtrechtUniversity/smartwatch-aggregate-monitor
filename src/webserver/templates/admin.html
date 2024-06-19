@@ -13,7 +13,9 @@
 </head>
 <script>
 const data_url = "{{ data.data_url|safe }}"
-const data_reload = {{ data.data_reload }}
+const data_reload = +"{{ data.data_reload }}"
+const label_show = "uitleg"
+const label_hide = "uitleg verbergen"
 
 $( document ).ready(function()
 {
@@ -29,17 +31,30 @@ $( document ).ready(function()
         'step': 10,
         'disableTextInput': true,
         'scrollDefault': 'now' });
-    // $('#setStartNow').on('click', function () {setSomeTime(new Date, 'session_start')})
-    // $('#setEndNow').on('click', function () {setSomeTime(new Date, 'session_end')})
     $('#setStartButton').on('click', function () {setSomeTime($('#startPicker').timepicker('getTime'), 'session_start');$("#startPicker").val('')})
     $('#setEndButton').on('click', function () {setSomeTime($('#endPicker').timepicker('getTime'), 'session_end');$("#endPicker").val('')})
-    $('#today').on('change', function (){
+    $('#today').on('change', function () {
         var today = $('#today').val();
         if (today) postData({'today': today});
     });
-    $('#showGraphs').on('click', function (){
+    $('#showGraphs').on('click', function () {
         if (today) postData({'show_graphs': $('#showGraphs').is(":checked")});
     });
+    $('.doc > .toggle').on('click', function () {
+        let txt = $(this).parent().children('.text');
+        txt.toggle();
+        if (txt.is(':visible')) {
+            $(this).html(label_hide);
+            txt.addClass('doc-showing')
+        } else {
+            $(this).html(label_show);
+            txt.removeClass('doc-showing')
+        }
+    });
+    $('.doc > .toggle').each(function () {
+        $(this).html(label_show)
+    });
+
     loadData();
 })
 </script> 
@@ -52,12 +67,12 @@ $( document ).ready(function()
         <h2>Sessie</h2>
 
         <div class="session">
-            <div>Dag:</div>
+            <div>Datum:</div>
             <div>
                 <input type="date" id="today" value="" disabled="disabled" />
                 <input type="button" onclick="
                     $('#today').attr('disabled', !$('#today').attr('disabled'));
-                    $(this).attr('value',$('#today').attr('disabled') ? 'edit' : 'done' );
+                    $(this).attr('value',$('#today').attr('disabled') ? 'edit' : 'klaar' );
                     " value="edit">
             </div>
         </div>
@@ -65,9 +80,7 @@ $( document ).ready(function()
         <div class="session">
             <div>Start:</div>
             <div>
-                <!-- <input class="set-button" type="button" id="setStartNow" value="Nu starten" /> 
-                of kies tijd: -->
-                <input id="startPicker" type="text" class="timePicker time" placeholder="klik"/>
+                <input id="startPicker" type="text" class="timePicker time" placeholder="kies tijd"/>
                 <input class="set-button" type="button" id="setStartButton" value="Instellen" /> 
                 <span id="startTime"></span>
             </div>
@@ -76,18 +89,46 @@ $( document ).ready(function()
         <div class="session">
             <div>Einde:</div>
             <div>
-                <!-- <input class="set-button" type="button" id="setEndNow" value="Nu stoppen" /> 
-                of kies tijd: -->
-                <input id="endPicker" type="text" class="timePicker time" placeholder="klik"/>
+                <input id="endPicker" type="text" class="timePicker time" placeholder="kies tijd"/>
                 <input class="set-button" type="button" id="setEndButton" value="Instellen" />
                 <span id="endTime"></span>
+            </div>
+        </div>
+
+        <div class="doc">
+            <div class="toggle"></div>
+            <div class="text">
+                <p class="title">
+                    Parameters om mee te bepalen uit welk datum/tijdvak de grafieken gegevens tonen.
+                </p>
+                <p>
+                    <span class="topic">Datum</span>: de datum loopt automatisch mee met de huidige datum, en hoeft niet te worden aangepast 
+                    tenzij er gegevens van een specifieke, eerdere datum moeten worden getoond. Klik in dat geval op 'edit'
+                    de datum wijzigbaar te maken, en vervolgens op het kalender-icoon. Klik op gewenste datum en vervolgens op 'klaar'.
+                    Stel de datum op de huidige datum in om hem weer automatisch te laten meelopen.
+                </p>
+                <p>
+                    <span class="topic">Start & Einde</span>: bepalen het begin en einde van het tijdvak waarvan de grafieken gegevens tonen.
+                    Klik op 'kies tijd', kies de gewenste start- of eindtijd, en klik op 'instellen' om deze tijd in te stellen. De huidige
+                    ingestelde tijden worden weergegeven naast de knop.
+                </p>
+                <p>
+                    De grafieken blijven de gegevens uit het ingestelde datum/tijdvak weergegeven net zo lang tot er een nieuwe
+                    start- en eindtijd wordt ingesteld. Als je een periode instelt waarin de polsbanden geen gegevens registreerden
+                    (of een eindtijd kiest die vroeger ligt dan de starttijd), geven de grafieken een nullijn weer. Als je een datum
+                    kiest waarvoor helemaal geen gegevens beschikbaar zijn, blijven de grafieken leeg.
+                </p>
+                <p>
+                    N.B.: al deze settings bepalen alleen wat er getoond wordt, en veranderen niets aan de gegevens zelf. Er is dus geen
+                    risico dat er gegevens verdwijnen of overschreven worden.
+                </p>
             </div>
         </div>
     </div>
 
     <div class="section">
         <h2>Grafieken</h2>
-        
+
         <div class="session">
             <div>
                 Verbergen
@@ -99,10 +140,23 @@ $( document ).ready(function()
             </div>
         </div>
 
+        <div class="doc">
+            <div class="toggle"></div>
+            <div class="text">
+                <p class="title">
+                    Grafieken tonen en onzichtbaar maken.
+                </p>
+                <p>
+                    Wanneer de schakelaar op 'Verbergen' staat wordt er in plaats van grafieken een 'Tot straks!' mededeling getoond.
+                    Laat de grafieken verborgen terwijl de sessie nog loopt, dan kunnen ze de participanten niet afleiden.
+                    De grafieken voor administrators met alleen gemiddelden (ID 'avg') is altijd zichtbaar.
+                </p>
+            </div>
+        </div>
     </div>
 
     <div class="section">
-        <h2>Highlights</h2>
+        <h2>Hoogtepunten</h2>
 
         <div>
             Stel in: <input type="text" id="highlight-label" placeholder="label"> 
@@ -127,29 +181,93 @@ $( document ).ready(function()
         <div>
             <input type="button" value="Download" onclick="exportHighlights()">
         </div>
+        
+        <div class="doc">
+            <div class="toggle"></div>
+            <div class="text">
+                <p class="title">
+                    Hoogtepunten tijdens een sessie registreren.
+                </p>
+                <p>
+                    Wanneer er tijdens een sessie iets opmerkelijks gebeurt dat mogelijk invloed heeft op de gemeten
+                    bio-signalen, kun je op dat moment vastleggen als hoogtepunt. Hoogtepunten worden bij alle deelnemers
+                    in de grafiek weergegeven als een rode vertikale lijn met een (vertikaal) label er bij.
+                </p>
+                <p>
+                    <span class="topic">Stel in</span>: voer een (kort) label (denk aan "Foute grap!" o.i.d.) in en klik op
+                    'Stel in' om het hoogtepunt op te slaan. Het hoogtepunt verschijnt in het lijstje, en wordt ook direct
+                    weergegeven in de grafieken (als die zichtbaar zijn).
+                </p>
+                <p>
+                    Let op, de <i>timestamp</i> van een hoogtepunt wordt vastgelegd op het moment van opslaan, en kan niet
+                    meer worden gewijzigd. Probeer als er een hoogtepunt is dit dus direct te registreren. Hoogtepunten
+                    toevoegen aan sessies die al voorbij zijn kan hierdoor ook niet. Je kunt een hoogtepunt verwijderen door
+                    op het rode kruisje erachter te klikken. 
+                </p>
+                <p>
+                    <span class="topic">Download</span>: klik op 'Download' om het lijstje  hoogtepunten te downloaden
+                    als .CSV-bestand.
+                </p>
+            </div>
+        </div>
+
     </div>
 
     <div class="section">
-        <h2>Devices</h2>
-        <table>
+        <h2>EmbracePlus</h2>
+        <table class="device-list">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>S/N</th>
-                    <th>password</th>
-                    <th>last poll</th>
-                    <th>data</th>
+                    <th>Wachtwoord</th>
+                    <th>Laatste request</th>
+                    <th>&#128200;</th>
                 </tr>
             </thead>
             <tbody id="device-list">
             </tbody>
         </table>
+
+        <br />
+
+        <div class="doc">
+            <div class="toggle"></div>
+            <div class="text">
+                <p class="title">
+                    Geregistreerde EmbracePlus armbanden.
+                </p>
+                <p>
+                    Lijst van alle geregistreerde EmbracePlus armbanden:
+                    <ul>
+                        <li><span class="topic">ID</span>:
+                            ID voor de URL op de browser op de tablets. Het volledige URL is:
+                            {{ data.fqdn|safe }}{{ data.device_path }}
+                        </li>
+                        <li><span class="topic">S/N</span>:
+                            serienummer van het apparaat (staat op de achterkant van iedere armband)</li>
+                        <li><span class="topic">Wachtwoord</span>:
+                            wachtwoord voor de pagina met grafieken (klik om zichtbaar te maken)</li>
+                        <li><span class="topic">Laatste request</span>:
+                            <i>timestamp</i> van de laatste keer dat een tablet data probeerde op te halen. Dient als indicatie
+                            of de grafieken nog wel verversd worden. ververs de pagina op een tablet als die blijkt te zijn gestopt
+                            met verversen (elk tablet haalt iedere {{ (data.device_refresh/1000)|round|int }} seconden
+                            nieuwe data op; deze admin-pagina ververst iedere {{ (data.data_reload/1000)|round|int }} seconden).
+                        </li>
+                        <li><span class="topic">&#128200;</span>:
+                            Link naar de grafieken zoals ze ook op de tablets te zien zijn. Als er '(no data)' staat betekent dat
+                            dat er voor het betreffende apparaat voor de ingestelde dag geen gegevens zijn geregistreerd (ook niet in
+                            rust; het apparaat is die dag niet aangeweest of heeft geen contact gehad met de server).
+                            <br />
+                            De laatste link (ID 'avg') toont de  grafieken met alleen de gemiddelden. Deze is altijd zichtbaar, 
+                            ook als de grafieken op de tablets verborgen zijn, en geeft al een indruk van de gegevens terwijl de
+                            sessie nog loopt.
+                        </li>
+                    </ul>
+                </p>
+            </div>
+        </div>
     </div>
-
-    <!-- <div>
-        Server data dir: <span id="data_dir"></span>
-    </div> -->
-
 
 </body>
 </html>

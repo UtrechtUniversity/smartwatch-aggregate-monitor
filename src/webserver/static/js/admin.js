@@ -13,6 +13,14 @@ class Highlight {
     }
 }
 
+function formatSeconds(sec) {
+    var d = Math.floor(sec / (3600*24))
+    var h = Math.floor(sec % (3600*24) / 3600)
+    var m = Math.floor(sec % 3600 / 60)
+    var s = Math.floor(sec % 60)
+    return (d>0?d+"d":"")+(h>0?h+"u":"")+(m>0?m+"m":"")+(s>0?s+"s":"")
+}
+
 function htmlDecode(input) {
     var doc = new DOMParser().parseFromString(input, "text/html");
     return doc.documentElement.textContent;
@@ -58,18 +66,22 @@ function showHighlights() {
 function showDevices(devices) {
     var buffer = ''
     passwords = []
+    devices.push({'id':'avg', 'serial':'', 'password': '', 'latest_request': '' })
     devices.forEach((x, i) => {
-        if (x.has_data)
-            data_link = `<a href="/device/${x.id}" target="window_${x.id}">&#128269;</a>`
+        if (x.has_data || x.id=='avg')
+            data_link = `<a href="/device/${x.id}/" target="window_${x.id}">&#128269;</a>`
         else
             data_link = '(no data)'
+
+        var req_diff = ''
+        if (x.latest_request) req_diff = ` (${formatSeconds(Math.round((new Date() - new Date(x.latest_request))/1000))})`
         
         line =
             `<tr>` +
                 `<td>${x.id}</td>`+
                 `<td>${x.serial}</td>`+
                 `<td data-pass="${x.password}" class="pointable" id="p${x.id}" onmousedown="showPass(this)">${mask}</td>`+
-                `<td>${x.latest_request}</td>`+
+                `<td>${x.latest_request}<span class="small">${req_diff}</span></td>`+
                 `<td class="center">${data_link}</td>`+
             `</tr>
             `;

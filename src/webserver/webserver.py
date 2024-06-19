@@ -13,6 +13,9 @@ cfg_file = None
 devices_file = None
 data_dir = None
 admin_pass = None
+device_refresh = 5000
+fqdn = None
+device_path = '/device/<ID>/'
 
 def get_devices():
     with open(devices_file) as f:
@@ -40,6 +43,8 @@ def get_settings():
         settings = json.load(f)
     settings['data_dir'] = data_dir
     settings['devices'] = get_devices()
+    if 'today' not in settings or len(settings['today'])==0:
+        settings['today'] = datetime.now().strftime("%Y-%m-%d")
     return settings
 
 def set_settings(data):
@@ -49,6 +54,10 @@ def set_settings(data):
             settings[key] = f"{settings['today']}T{data[key]}:00Z"
         else:
             settings[key] = data[key]
+
+        if key =='today' and data[key]==datetime.now().strftime("%Y-%m-%d"):
+            del settings[key]
+
     write_settings(settings)
 
 def set_users():
@@ -81,6 +90,7 @@ def get_admin_data():
         },
         'highlights': settings['highlights'] if 'highlights' in settings else []
     }
+
     return data
 
 class DeviceSessionData:
@@ -181,7 +191,10 @@ def root():
 def admin():
     data = {
         'data_url': f'/admin/data/',
-        'data_reload': 30000
+        'data_reload': 30000,
+        'fqdn': fqdn,
+        'device_path': device_path,
+        'device_refresh': device_refresh
     }
     return render_template('admin.html', data=data)
 
@@ -196,6 +209,12 @@ def admin_data():
 
 @app.route('/data/<device_id>/')
 def data(device_id):
+
+    avg_only = False
+    if device_id=='avg':
+        avg_only = True
+        device_id = get_devices()[0]['id']
+
     settings = get_settings()
     device_serial = get_device_serial(devices=settings['devices'], device_id=device_id)
     dsd = DeviceSessionData(settings=settings)
@@ -205,8 +224,6 @@ def data(device_id):
         status = 404
     else:
         write_latest_request(device_id)
-
-
         session_data = dsd.get_session_data(device=device_serial)
         data = {}
         status = 200
@@ -214,7 +231,7 @@ def data(device_id):
             data[char] = [
                 {
                     'timestamp': x['timestamp'].strftime("%Y-%m-%d %H:%M"),
-                    'value': x['val'],
+                    'value': 0 if avg_only else x['val'],
                     'average': [y['val'] for y in session_data['averages'][char] if y['timestamp']==x['timestamp']][0]
                 } for x in session_data['data'][char]]
 
@@ -223,10 +240,16 @@ def data(device_id):
             return record
 
         out = {
+            'avg_only' : avg_only,
             'show_graphs': settings['show_graphs'],
             'session_data': data,
             'highlights': [ makeTimeToday(record=x, today=settings['today']) 
-                           for x in settings['highlights']] if 'highlights' in settings else []
+                           for x in settings['highlights']] if 'highlights' in settings else [],
+            'session': {
+                'today': settings['today'],
+                'start': settings['session_start'],
+                'end': settings['session_end']
+            },
         }
 
     response = app.response_class(
@@ -242,11 +265,11 @@ def data(device_id):
 def device(device_id):
     settings = get_settings()
     device_serial = get_device_serial(devices=settings['devices'], device_id=device_id)
-    if not device_serial:
+    if not device_id=='avg' and not device_serial:
         return f"device {device_id} not found"
     data = {
         'data_url': f'/data/{device_id}',
-        'data_reload': 5000
+        'data_reload': device_refresh
     }
     return render_template('device.html', data=data)
 
@@ -271,6 +294,7 @@ if __name__ == '__main__':
     devices_file = os.getenv('DEVICES_FILE', './devices.json')
     data_dir = os.getenv('DATA_DIR', '../../data/raw/')
     admin_pass = os.getenv('ADMIN_PASS', 'ns#ef$#%^&*()')
+    fqdn = os.getenv('fqdn', '192.168.178.50:5000')
 
     if debug:
         print(f"CFG_FILE={cfg_file}")
