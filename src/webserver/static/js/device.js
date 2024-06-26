@@ -138,7 +138,11 @@ function loadData() {
     $("#load-status").html("&#10227;").show();
 
     let url = new URL(window.location.href)
-    $.getJSON(url.origin + data_url, function(data)
+    let bla = url.origin + data_url
+
+    console.log(bla);
+
+    $.getJSON(bla, function(data)
     {
         show_graphs = data.show_graphs
         for (var prop in data.session_data) {
