@@ -56,8 +56,7 @@ $( document ).ready(function()
     });
 
     let url = new URL(window.location.href)
-    $('.fqdn').html(url.hostname)
-    
+    $('.origin').html(url.origin)
 
     loadData();
 })
@@ -245,8 +244,8 @@ $( document ).ready(function()
                     Lijst van alle geregistreerde EmbracePlus armbanden:
                     <ul>
                         <li><span class="topic">ID</span>:
-                            ID voor de URL op de browser op de tablets. Het volledige URL is:
-                            <span class="fqdn"></span>/{{ data.device_path }}
+                            ID voor de URL op de browser op de tablets. Het volledige URL is:<br />
+                            <span class="origin"></span>/{{ data.device_path }}
                         </li>
                         <li><span class="topic">S/N</span>:
                             serienummer van het apparaat (staat op de achterkant van iedere armband)</li>
