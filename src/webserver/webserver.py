@@ -12,9 +12,7 @@ debug = False
 cfg_file = None
 devices_file = None
 data_dir = None
-admin_pass = None
 device_refresh = 5000
-fqdn = None
 device_path = '/device/<ID>/'
 
 def get_devices():
@@ -63,7 +61,7 @@ def set_settings(data):
 def set_users():
     for device in get_devices():
         users[device['id']] = generate_password_hash(device['password'])
-    users['admin'] = generate_password_hash(admin_pass)
+    users['admin'] = generate_password_hash(get_settings()['admin'])
 
 def get_device_serial(devices, device_id):
     device = [x for x in devices if x['id']==device_id]
@@ -192,7 +190,6 @@ def admin():
     data = {
         'data_url': f'/admin/data/',
         'data_reload': 30000,
-        'fqdn': fqdn,
         'device_path': device_path,
         'device_refresh': device_refresh
     }
@@ -293,8 +290,6 @@ if __name__ == '__main__':
     cfg_file = os.getenv('CFG_FILE', './config.json')
     devices_file = os.getenv('DEVICES_FILE', './devices.json')
     data_dir = os.getenv('DATA_DIR', '../../data/raw/')
-    admin_pass = os.getenv('ADMIN_PASS', 'ns#ef$#%^&*()')
-    fqdn = os.getenv('fqdn', '192.168.178.50:5000')
 
     if debug:
         print(f"CFG_FILE={cfg_file}")

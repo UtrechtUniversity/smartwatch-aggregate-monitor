@@ -55,6 +55,10 @@ $( document ).ready(function()
         $(this).html(label_show)
     });
 
+    let url = new URL(window.location.href)
+    $('.fqdn').html(url.hostname)
+    
+
     loadData();
 })
 </script> 
@@ -242,7 +246,7 @@ $( document ).ready(function()
                     <ul>
                         <li><span class="topic">ID</span>:
                             ID voor de URL op de browser op de tablets. Het volledige URL is:
-                            {{ data.fqdn|safe }}{{ data.device_path }}
+                            <span class="fqdn"></span>/{{ data.device_path }}
                         </li>
                         <li><span class="topic">S/N</span>:
                             serienummer van het apparaat (staat op de achterkant van iedere armband)</li>
