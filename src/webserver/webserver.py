@@ -188,14 +188,14 @@ def root():
 @auth.login_required()
 def admin():
     data = {
-        'data_url': f'/admin/config/',
+        'data_url': f'/admin/data/',
         'data_reload': 30000,
         'device_path': device_path,
         'device_refresh': device_refresh
     }
     return render_template('admin.html', data=data)
 
-@app.route('/admin/config/')
+@app.route('/admin/codatanfig/')
 def admin_data():
     response = app.response_class(
         response=json.dumps(get_admin_data()),
@@ -265,7 +265,7 @@ def device(device_id):
     if not device_id=='avg' and not device_serial:
         return f"device {device_id} not found"
     data = {
-        'data_url': f'/data/{device_id}',
+        'data_url': f'/data/{device_id}/',
         'data_reload': device_refresh
     }
     return render_template('device.html', data=data)
