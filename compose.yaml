@@ -1,6 +1,6 @@
 services:
   web:
-    image: "test:test"
+    image: "lowlands:latest"
     stop_signal: SIGINT
     ports:
       - "8000:5000"
@@ -8,7 +8,6 @@ services:
       - DATA_DIR=/data
       - CFG_FILE=/config/config.json
       - DEVICES_FILE=/config/devices.json
-      - ADMIN_PASS=tralala
       - DEBUG=1
       - PYTHONUNBUFFERED=1
     volumes:
