@@ -1,11 +1,14 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <title>Lowlands EmbracePlus monitor</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/device.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fonts/inter.css') }}">
     <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}" charset="utf-8"></script> 
     <script src="{{ url_for('static', filename='js/d3.js') }}" charset="utf-8"></script> 
     <script src="{{ url_for('static', filename='js/plot.js') }}" charset="utf-8"></script> 
     <script src="{{ url_for('static', filename='js/device.js') }}" charset="utf-8"></script> 
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/device.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='fonts/inter.css') }}">
 </head>
 <script>
 const data_url = '{{ data.data_url|safe }}'
