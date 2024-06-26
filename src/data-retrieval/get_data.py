@@ -1,7 +1,6 @@
+import argparse
 import boto3
 import json
-import os
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -70,24 +69,26 @@ class CarePortalDataDownloader:
 
 if __name__=="__main__":
 
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--date', type=str, help='Retrieve for this date. Format: <YYYY-MM-DD> or show-all; leave empty for today')
+    parser.add_argument('--aws-cfg-path', type=str, required=True, help='Path of AWS config file')
+    parser.add_argument('--data-dir', type=str, required=True, help='Path of root folder for downloading data')
+    args=parser.parse_args()
+
+    aws_cfg_file = args.aws_cfg_path
+    data_dir = args.data_dir
+
     monitor_date = None
 
-    if len(sys.argv)>1:
-        try:
-            if sys.argv[1]=='show-all':
-                monitor_date = '*'
-            else:
-                monitor_date = datetime.strptime(sys.argv[1], '%Y-%m-%d').replace(tzinfo=timezone.utc).strftime('%Y-%m-%d')
-        except:
-            print("To retrieve files for today:            python get_data.py")
-            print("To retrieve files for a specific date:  python get_data.py <YYYY-MM-DD>")
-            print("For a list of available .CSV-files:     python get_data.py show-all")
-            exit(0)
-
-    aws_cfg_file = os.getenv('AWS_CFG_FILE')
-    data_dir = os.getenv('DATA_DIR', '../../data/raw/')
+    if args.date=='show-all':
+        monitor_date = '*'
+    elif args.date:
+        monitor_date = datetime.strptime(args.date, '%Y-%m-%d').replace(tzinfo=timezone.utc).strftime('%Y-%m-%d')
 
     cpd = CarePortalDataDownloader(
         aws_cfg_file=aws_cfg_file, 
         data_dir=data_dir,
         monitor_date=monitor_date)
+
+    # export AWS_CFG_FILE='/root/aws_config.json'
+    # export DATA_DIR='/data/lowlands'
