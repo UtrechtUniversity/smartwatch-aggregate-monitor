@@ -195,7 +195,7 @@ def admin():
     }
     return render_template('admin.html', data=data)
 
-@app.route('/admin/codatanfig/')
+@app.route('/admin/data/')
 def admin_data():
     response = app.response_class(
         response=json.dumps(get_admin_data()),

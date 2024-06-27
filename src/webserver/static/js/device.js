@@ -136,7 +136,6 @@ function makePlots(data) {
 
 function loadData() {
     $("#load-status").html("&#10227;").show();
-
     $.getJSON(data_url, function(data)
     {
         show_graphs = data.show_graphs
