@@ -59,14 +59,10 @@ def get_settings():
 
 def set_settings(data):
     settings = get_settings()
-
     for key in data.keys():
         settings[key] = data[key]
-        print(key,data[key]==datetime.now().strftime("%Y-%m-%d"))
         if key =='today' and data[key]==datetime.now().strftime("%Y-%m-%d"):
-            print(settings)
             del settings[key]
-            print(settings)
 
     write_settings(settings)
 
@@ -316,6 +312,7 @@ if __name__ == '__main__':
         print(f"devices: {get_devices()}")
 
     if not Path(cfg_file).exists():
+        print("New CFG")
         write_settings({
             'today': datetime.now().strftime("%Y-%m-%d"),
             'session_start': datetime.now().strftime("%H:%M"),
