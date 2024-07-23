@@ -66,6 +66,7 @@ function showHighlights() {
 function showDevices(devices) {
     var buffer = ''
     passwords = []
+    
     devices.push({'id':'avg', 'serial':'', 'password': '', 'latest_request': '' })
     devices.forEach((x, i) => {
         if (x.has_data || x.id=='avg')
@@ -73,6 +74,7 @@ function showDevices(devices) {
         else
             data_link = '(no data)'
 
+        let img_path = image_base_url.replace('__ID__', x.id)
         var req_diff = ''
         if (x.latest_request) req_diff = ` (${formatSeconds(Math.round((new Date() - new Date(x.latest_request))/1000))})`
         
@@ -83,8 +85,14 @@ function showDevices(devices) {
                 `<td data-pass="${x.password}" class="pointable" id="p${x.id}" onmousedown="showPass(this)">${mask}</td>`+
                 `<td>${x.latest_request}<span class="small">${req_diff}</span></td>`+
                 `<td class="center">${data_link}</td>`+
-            `</tr>
-            `;
+                `<td class="center small">`+
+                    `<span class="pointable qr-link" data-id="${x.id}" onmousedown="showCode(this)">(klik)</span>`+
+                    `<span class="pointable qr-code" data-id="${x.id}" onmousedown="showCode(this)">` +
+                        `<object type="image/svg+xml" data="${img_path}" class="logo">QR code</object>`+
+                        `(sluiten)` +
+                    `</span>` +
+                `</td>`+
+            `</tr>`;
         buffer = `${buffer}${line}`
     });
     $('#device-list').html(buffer);
@@ -97,6 +105,11 @@ function showPass(ele) {
     $(ele).attr('data-pass', a)
 }
 
+function showCode(ele) {
+    let a = $(ele).attr('data-id')
+    $('.qr-link[data-id='+a+']').toggle();
+    $('.qr-code[data-id='+a+']').toggle();
+}
 function formatStartTime(start_time, incl_seconds=true) {
     let hhmm = `${start_time.getHours()}:${(start_time.getMinutes() < 10 ? '0' : '') + start_time.getMinutes()}`
     let ss = `:${(start_time.getSeconds() < 10 ? '0' : '') + start_time.getSeconds()}`

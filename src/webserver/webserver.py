@@ -1,6 +1,8 @@
 import csv
 import json
 import os
+import qrcode
+import qrcode.image.svg
 from datetime import datetime, timezone, timedelta
 from flask import Flask, render_template, request
 from flask_httpauth import HTTPBasicAuth
@@ -13,7 +15,17 @@ cfg_file = None
 devices_file = None
 data_dir = None
 device_refresh = 5000
+base_url = None
 device_path = '/device/<ID>/'
+image_folder = '/app/static/img'
+
+def make_qr_code(url, filename):
+    filename = f'{image_folder}/{filename}.svg'
+    if Path(filename).is_file():
+        return
+    img = qrcode.make(url, image_factory=qrcode.image.svg.SvgImage)
+    with open(filename, 'wb') as f:
+        img.save(f)
 
 def get_devices():
     with open(devices_file) as f:
@@ -187,6 +199,12 @@ def root():
 @app.route('/admin/')
 @auth.login_required()
 def admin():
+
+    for device in get_devices():
+        make_qr_code(f"{base_url}/device/{device['id']}/", f"qr_device_{device['id']}")
+    
+    make_qr_code(f"{base_url}/device/avg/", f"qr_device_avg")
+
     data = {
         'data_url': f'/admin/data/',
         'data_reload': 30000,
@@ -206,7 +224,6 @@ def admin_data():
 
 @app.route('/data/<device_id>/')
 def data(device_id):
-
     avg_only = False
     if device_id=='avg':
         avg_only = True
@@ -290,6 +307,7 @@ if __name__ == '__main__':
     cfg_file = os.getenv('CFG_FILE', './config.json')
     devices_file = os.getenv('DEVICES_FILE', './devices.json')
     data_dir = os.getenv('DATA_DIR', '../../data/raw/')
+    base_url = os.getenv('BASE_URL', 'https://lowlands2024.its-re.src.surf-hosted.nl')
 
     if debug:
         print(f"CFG_FILE={cfg_file}")

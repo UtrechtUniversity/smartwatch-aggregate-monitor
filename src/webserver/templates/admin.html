@@ -16,6 +16,7 @@ const data_url = "{{ data.data_url|safe }}"
 const data_reload = +"{{ data.data_reload }}"
 const label_show = "uitleg"
 const label_hide = "uitleg verbergen"
+const image_base_url = "{{ url_for('static', filename='img/qr_device___ID__.svg') }}"
 
 $( document ).ready(function()
 {
@@ -102,12 +103,13 @@ $( document ).ready(function()
             <div class="toggle"></div>
             <div class="text">
                 <p class="title">
-                    Parameters om mee te bepalen uit welk datum/tijdvak de grafieken gegevens tonen.
+                    Parameters die bepalen uit welk datum/tijdvak gegevens worden getoond.
                 </p>
                 <p>
-                    <span class="topic">Datum</span>: de datum loopt automatisch mee met de huidige datum, en hoeft niet te worden aangepast 
-                    tenzij er gegevens van een specifieke, eerdere datum moeten worden getoond. Klik in dat geval op 'edit'
-                    de datum wijzigbaar te maken, en vervolgens op het kalender-icoon. Klik op gewenste datum en vervolgens op 'klaar'.
+                    <span class="topic">Datum</span>: de datum loopt automatisch mee met de huidige datum, en hoeft niet te worden aangepast, 
+                    tenzij er gegevens van een specifieke, eerdere datum moeten worden getoond. Klik in dat geval op 'edit' om
+                    de datum wijzigbaar te maken, en vervolgens op het kalender-icoon. Klik de gewenste datum aan en vervolgens op 'klaar' 
+                    om de datum op te slaan.<br />
                     Stel de datum op de huidige datum in om hem weer automatisch te laten meelopen.
                 </p>
                 <p>
@@ -122,7 +124,7 @@ $( document ).ready(function()
                     kiest waarvoor helemaal geen gegevens beschikbaar zijn, blijven de grafieken leeg.
                 </p>
                 <p>
-                    N.B.: al deze settings bepalen alleen wat er getoond wordt, en veranderen niets aan de gegevens zelf. Er is dus geen
+                    N.B.: al deze settings bepalen alleen wat er getoond wordt, en veranderen niets aan de gegevens zelf. Er is geen
                     risico dat er gegevens verdwijnen of overschreven worden.
                 </p>
             </div>
@@ -147,12 +149,12 @@ $( document ).ready(function()
             <div class="toggle"></div>
             <div class="text">
                 <p class="title">
-                    Grafieken tonen en onzichtbaar maken.
+                    Grafieken tonen en verbergen.
                 </p>
                 <p>
                     Wanneer de schakelaar op 'Verbergen' staat wordt er in plaats van grafieken een 'Tot straks!' mededeling getoond.
                     Laat de grafieken verborgen terwijl de sessie nog loopt, dan kunnen ze de participanten niet afleiden.
-                    De grafieken voor administrators met alleen gemiddelden (ID 'avg') is altijd zichtbaar.
+                    De grafieken met alleen gemiddelden (ID 'avg') is altijd zichtbaar voor administrators.
                 </p>
             </div>
         </div>
@@ -204,8 +206,8 @@ $( document ).ready(function()
                 <p>
                     Let op, de <i>timestamp</i> van een hoogtepunt wordt vastgelegd op het moment van opslaan, en kan niet
                     meer worden gewijzigd. Probeer als er een hoogtepunt is dit dus direct te registreren. Hoogtepunten
-                    toevoegen aan sessies die al voorbij zijn kan hierdoor ook niet. Je kunt een hoogtepunt verwijderen door
-                    op het rode kruisje erachter te klikken. 
+                    toevoegen aan sessies die al voorbij zijn kan  niet. Je kunt een hoogtepunt wel verwijderen door
+                    op het rode kruisje erachter te klikken.
                 </p>
                 <p>
                     <span class="topic">Download</span>: klik op 'Download' om het lijstje  hoogtepunten te downloaden
@@ -226,6 +228,7 @@ $( document ).ready(function()
                     <th>Wachtwoord</th>
                     <th>Laatste request</th>
                     <th>&#128200;</th>
+                    <th>&#128279;</th>
                 </tr>
             </thead>
             <tbody id="device-list">
