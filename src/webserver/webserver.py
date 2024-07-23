@@ -90,7 +90,7 @@ def get_admin_data():
         'data_dir': settings['data_dir'],
         'devices': [add_meta_data(dict=x, devices_with_data=dsd.get_devices(dsd.data_dir)) for x in get_devices()],
         'session': {
-            'today': settings['today'],
+            'today': get_today(settings),
             'start': settings['session_start'],
             'end': settings['session_end']
         },
