@@ -108,7 +108,8 @@ class DeviceSessionData:
                  settings,
                  device=None) -> None:
         self.device = device
-        self.data_dir = Path(settings['data_dir']) / Path(settings['today'])
+        today = settings['today'] if 'today' in settings else datetime.now().strftime("%Y-%m-%d")
+        self.data_dir = Path(settings['data_dir']) / Path(today)
         self.session_data = []
         self.session_averages = []
         if self.data_dir.exists():
