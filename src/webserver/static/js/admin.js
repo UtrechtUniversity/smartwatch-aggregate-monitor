@@ -110,6 +110,7 @@ function showCode(ele) {
     $('.qr-link[data-id='+a+']').toggle();
     $('.qr-code[data-id='+a+']').toggle();
 }
+
 function formatStartTime(start_time, incl_seconds=true) {
     let hhmm = `${start_time.getHours()}:${(start_time.getMinutes() < 10 ? '0' : '') + start_time.getMinutes()}`
     let ss = `:${(start_time.getSeconds() < 10 ? '0' : '') + start_time.getSeconds()}`
@@ -127,6 +128,7 @@ function postData(data) {
         contentType: "application/json",
         success: function(data, textStatus, jqXHR)
         {
+            console.log(data);
             setData(data);
         }
     });

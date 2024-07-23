@@ -59,6 +59,7 @@ def get_settings():
 
 def set_settings(data):
     settings = get_settings()
+
     for key in data.keys():
         # if key in ['start_time', 'end_time']:
         #     settings[key] = f"{settings['today']}T{data[key]}:00Z"
@@ -294,9 +295,9 @@ def device(device_id):
 @app.route('/ajax/', methods = ['POST'])
 def ajax():
     data = request.json
-    # print(data)
+    print(data)
     set_settings(data)
-    settings=get_settings()
+    settings = get_settings()
     del settings['admin']
     response = app.response_class(
         response=json.dumps(get_admin_data()),
