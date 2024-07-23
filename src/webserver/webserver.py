@@ -53,14 +53,13 @@ def get_settings():
         settings = json.load(f)
     settings['data_dir'] = data_dir
     settings['devices'] = get_devices()
-    if 'today' not in settings or len(settings['today'])==0:
-        settings['today'] = datetime.now().strftime("%Y-%m-%d")
+    # if 'today' not in settings or len(settings['today'])==0:
+    #     settings['today'] = datetime.now().strftime("%Y-%m-%d")
     return settings
 
 def set_settings(data):
     settings = get_settings()
     for key in data.keys():
-        print(key, settings[key], data[key])
         settings[key] = data[key]
         if key =='today' and data[key]==datetime.now().strftime("%Y-%m-%d"):
             del settings[key]
