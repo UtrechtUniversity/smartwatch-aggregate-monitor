@@ -31,6 +31,7 @@ table {
 th, td {
     padding: 5px;
     border: 1px solid black;
+    vertical-align: top;
 }
 thead tr {
     background-color: grey;
@@ -77,7 +78,7 @@ td.code {
 div.section {
     border-bottom: 1px solid #ccc;
     padding-bottom: 10px;
-    width: 700px;
+    width: 1000px;
 }
 div.session > div {
     display: inline-block;

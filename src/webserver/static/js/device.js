@@ -67,8 +67,9 @@ function makePlot(p) {
         
         var plot_data = {
             title: titles.title, 
-            subtitle: `${titles.subtitle} ${titles.symbol}`,
-            caption: titles.caption,
+            // subtitle: `${titles.subtitle} ${titles.symbol}`,
+            // caption: titles.caption,
+            subtitle: `${titles.index} ${titles.subtitle}`,
             x: {type: "time", label: axis.x, grid: false},
             y: {label: axis.y, grid: true, domain: [lowest, highest],},
             marks: marks
@@ -79,7 +80,7 @@ function makePlot(p) {
             marks: [
                 Plot.frame({rx: 10, ry: 10, stroke: "#999"}),
                 Plot.text(["Tot straks!"], {frameAnchor: "top", fontSize: 36, fill: "#666", dy:90}),
-                Plot.text([`Hier worden na afloop van de sessie\njouw ${titles.subtitle} getoond.`],
+                Plot.text([`Hier wordt na afloop van de sessie\njouw ${titles.subtitle.toLowerCase()} getoond.`],
                     {frameAnchor: "top", fontSize: 18, fill: "#666", dy: 150, lineHeight: 1.2})
             ]
         }
@@ -109,14 +110,15 @@ function makePlots(data) {
         highlights: data.highlights,
         colors: colors_eda,
         axis: { x: "Time", y: "microSiemens (μS)" },
-        titles: { subtitle: "Electrodermal Activity", caption: "Fig 1. This is the EDA during the session", symbol: "\u23E6" },
+        // titles: { subtitle: "Electrodermal Activity", caption: "Fig 1. This is the EDA during the session", symbol: "\u23E6" },
+        titles: { index: "Grafiek 1:", subtitle: "Huidgeleiding" },
         avg_only: data.avg_only
         }));
 
     eda_text_div.innerHTML = '';
     if (show_graphs)
         eda_text_div.innerHTML = 
-            'Electrodermal activity (EDA) is the continuous variation in the electrical characteristics of the skin, which varies with the moisture level. The moisture level depends on the sweat glands and blood flow, which are controlled by the sympathetic and parasympathetic nervous systems.'
+            'Huidgeleiding (of zweetafgifte) is een maat voor hoe je huid reageert op spanning of opwinding. Je huid heeft kleine zweetklieren die zweet afscheiden. Doordat zweet elektriciteit geleidt, kan elektrische geleiding van de huid gemeten worden en krijg je een kijkje in iemands emotionele toestand.'
 
     pulse_div.innerHTML = '';
     pulse_div.append(makePlot({
@@ -124,14 +126,14 @@ function makePlots(data) {
         highlights: data.highlights,
         colors: colors_pulse,
         axis: { x: "Time", y: "Beats per minute" },
-        titles: { subtitle: "Pulse rate", caption: "Fig 2. This is the pulse rate during the session", symbol: "\u2661" },
+        // titles: { subtitle: "Pulse rate", caption: "Fig 2. This is the pulse rate during the session", symbol: "\u2661" },
+        titles: { index: "Grafiek 2:", subtitle: "Hartslag" },
         avg_only: data.avg_only
     }));
     pulse_text_div.innerHTML = '';
     if (show_graphs)
         pulse_text_div.innerHTML = 
-            'A normal resting heart rate for adults ranges from 60 to 100 beats per minute. Generally, a lower heart rate at rest implies more efficient heart function and better cardiovascular fitness. For example, a well-trained athlete might have a normal resting heart rate closer to 40 beats per minute.'
-
+            'Hartslag is het aantal keer dat je hart per minuut klopt. Je hart pompt bloed door je lichaam, en dit gebeurt sneller of langzamer afhankelijk van wat je doet en hoe je je voelt.'
 }
 
 function loadData() {

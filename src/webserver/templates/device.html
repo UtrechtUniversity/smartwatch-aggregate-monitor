@@ -25,20 +25,26 @@ $( document ).ready(function ()
 });
 </script>
 <body>
+
+    <div id="banner"></div>
+
+    <div id="main">
+
+        <div class="main-title">
+            <h1 id="main-title" data-text="Hoe reageerde jouw lichaam tijdens de sessie?"></h1>
+        </div>
+
+        <div class="plot">
+            <div id="eda-plot"></div>
+            <div id="eda-text" class="text"></div>
+        </div>
+        <div class="plot">
+            <div id="pulse-rate-plot"></div>
+            <div id="pulse-rate-text" class="text"></div>
+        </div>
+    </div>
+
     <div id="load-status" class="bottomcorner"></div>
-    <div id="logo" class="topcorner"></div>
 
-    <div class="main-title">
-        <h1 id="main-title" data-text="Your bio-markers!"></h1>
-    </div>
-
-    <div class="plot">
-        <div id="eda-plot"></div>
-        <div id="eda-text" class="text"></div>
-    </div>
-    <div class="plot">
-        <div id="pulse-rate-plot"></div>
-        <div id="pulse-rate-text" class="text"></div>
-    </div>
 </body>
 </html>
