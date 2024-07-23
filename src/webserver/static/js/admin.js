@@ -72,7 +72,7 @@ function showDevices(devices) {
         if (x.has_data || x.id=='avg')
             data_link = `<a href="/device/${x.id}/" target="window_${x.id}">&#128269;</a>`
         else
-            data_link = '(no data)'
+            data_link = '(no&nbsp;data)'
 
         let img_path = image_base_url.replace('__ID__', x.id)
         var req_diff = ''
@@ -88,8 +88,8 @@ function showDevices(devices) {
                 `<td class="center small code">`+
                     `<span class="pointable qr-link" data-id="${x.id}" onmousedown="showCode(this)">(klik)</span>`+
                     `<span class="pointable qr-code" data-id="${x.id}" onmousedown="showCode(this)">` +
-                        `(sluiten)` +
                         `<object type="image/svg+xml" data="${img_path}" class="logo">QR code</object>`+
+                        `(sluiten)` +
                     `</span>` +
                 `</td>`+
             `</tr>`;
