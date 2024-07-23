@@ -99,6 +99,9 @@ def get_admin_data():
 
     return data
 
+def get_today(settings):
+    return settings['today'] if 'today' in settings else datetime.now().strftime("%Y-%m-%d")
+
 class DeviceSessionData:
 
     # [(var name, csv column header, json var name ), ... ]
@@ -108,8 +111,7 @@ class DeviceSessionData:
                  settings,
                  device=None) -> None:
         self.device = device
-        today = settings['today'] if 'today' in settings else datetime.now().strftime("%Y-%m-%d")
-        self.data_dir = Path(settings['data_dir']) / Path(today)
+        self.data_dir = Path(settings['data_dir']) / Path(get_today(settings))
         self.session_data = []
         self.session_averages = []
         if self.data_dir.exists():
@@ -257,7 +259,7 @@ def data(device_id):
             'highlights': [ makeTimeToday(record=x, today=settings['today']) 
                            for x in settings['highlights']] if 'highlights' in settings else [],
             'session': {
-                'today': settings['today'],
+                'today': get_today(settings),
                 'start': settings['session_start'],
                 'end': settings['session_end']
             },
