@@ -60,6 +60,7 @@ def get_settings():
 def set_settings(data):
     settings = get_settings()
     for key in data.keys():
+        print(key, settings[key], data[key])
         settings[key] = data[key]
         if key =='today' and data[key]==datetime.now().strftime("%Y-%m-%d"):
             del settings[key]
@@ -286,7 +287,6 @@ def device(device_id):
 @app.route('/ajax/', methods = ['POST'])
 def ajax():
     data = request.json
-    print(data)
     set_settings(data)
     settings = get_settings()
     del settings['admin']
