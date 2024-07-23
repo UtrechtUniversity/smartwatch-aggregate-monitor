@@ -84,7 +84,7 @@ function showDevices(devices) {
                 `<td>${x.serial}</td>`+
                 `<td data-pass="${x.password}" class="pointable" id="p${x.id}" onmousedown="showPass(this)">${mask}</td>`+
                 `<td>${x.latest_request}<span class="small">${req_diff}</span></td>`+
-                `<td class="center">${data_link}</td>`+
+                `<td class="center small">${data_link}</td>`+
                 `<td class="center small code">`+
                     `<span class="pointable qr-link" data-id="${x.id}" onmousedown="showCode(this)">(klik)</span>`+
                     `<span class="pointable qr-code" data-id="${x.id}" onmousedown="showCode(this)">` +
