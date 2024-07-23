@@ -61,20 +61,12 @@ def set_settings(data):
     settings = get_settings()
 
     for key in data.keys():
-        # if key in ['start_time', 'end_time']:
-        #     settings[key] = f"{settings['today']}T{data[key]}:00Z"
-        # else:
         settings[key] = data[key]
-
-        print(key, ':', data[key])
-
-
-        if key =='today':
-            print(':',data[key],':')
-            print(':',datetime.now().strftime("%Y-%m-%d"),':')
-
+        print(key,data[key]==datetime.now().strftime("%Y-%m-%d"))
         if key =='today' and data[key]==datetime.now().strftime("%Y-%m-%d"):
+            print(settings)
             del settings[key]
+            print(settings)
 
     write_settings(settings)
 
