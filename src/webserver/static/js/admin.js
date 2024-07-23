@@ -88,8 +88,8 @@ function showDevices(devices) {
                 `<td class="center small code">`+
                     `<span class="pointable qr-link" data-id="${x.id}" onmousedown="showCode(this)">(klik)</span>`+
                     `<span class="pointable qr-code" data-id="${x.id}" onmousedown="showCode(this)">` +
-                        `<object type="image/svg+xml" data="${img_path}" class="logo">QR code</object>`+
                         `(sluiten)` +
+                        `<object type="image/svg+xml" data="${img_path}" class="logo">QR code</object>`+
                     `</span>` +
                 `</td>`+
             `</tr>`;
