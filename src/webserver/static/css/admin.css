@@ -52,6 +52,10 @@ td a {
     text-decoration: none;
 }
 
+td.code {
+    width: 201px;
+}
+
 .device-list tr:last-child {
     border-top-style: double;
 }

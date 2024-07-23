@@ -85,7 +85,7 @@ function showDevices(devices) {
                 `<td data-pass="${x.password}" class="pointable" id="p${x.id}" onmousedown="showPass(this)">${mask}</td>`+
                 `<td>${x.latest_request}<span class="small">${req_diff}</span></td>`+
                 `<td class="center">${data_link}</td>`+
-                `<td class="center small">`+
+                `<td class="center small code">`+
                     `<span class="pointable qr-link" data-id="${x.id}" onmousedown="showCode(this)">(klik)</span>`+
                     `<span class="pointable qr-code" data-id="${x.id}" onmousedown="showCode(this)">` +
                         `<object type="image/svg+xml" data="${img_path}" class="logo">QR code</object>`+
@@ -128,7 +128,7 @@ function postData(data) {
         contentType: "application/json",
         success: function(data, textStatus, jqXHR)
         {
-            console.log(data);
+            // console.log(data);
             setData(data);
         }
     });
