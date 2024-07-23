@@ -66,6 +66,9 @@ def set_settings(data):
         # else:
         settings[key] = data[key]
 
+        print(key, ':', data[key])
+
+
         if key =='today':
             print(':',data[key],':')
             print(':',datetime.now().strftime("%Y-%m-%d"),':')
