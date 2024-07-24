@@ -3,12 +3,12 @@ import json
 import os
 import qrcode
 import qrcode.image.svg
-from datetime import datetime, timezone, timedelta
-from flask import Flask, render_template, request
+from datetime import (datetime, timezone, timedelta)
+from flask import (Flask, render_template, request)
 from flask_httpauth import HTTPBasicAuth
 from pathlib import Path
 from statistics import fmean
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import (generate_password_hash, check_password_hash)
 
 debug = False
 cfg_file = None
@@ -60,8 +60,16 @@ def get_settings():
 def set_settings(data):
     settings = get_settings()
     for key in data.keys():
-        settings[key] = data[key]
-        if key =='today' and data[key]==datetime.now().strftime("%Y-%m-%d"):
+        if key == 'offset':
+            try:
+                settings[key] = int(data[key])
+                if abs(settings[key])>12:
+                    settings[key] = 0
+            except:
+                settings[key] = 0
+        else:
+            settings[key] = data[key]
+        if key == 'today' and data[key]==datetime.now().strftime("%Y-%m-%d"):
             del settings[key]
 
     write_settings(settings)
@@ -92,7 +100,8 @@ def get_admin_data():
         'session': {
             'today': get_today(settings),
             'start': settings['session_start'],
-            'end': settings['session_end']
+            'end': settings['session_end'],
+            'offset': settings['offset']
         },
         'highlights': settings['highlights'] if 'highlights' in settings else []
     }
@@ -114,6 +123,7 @@ class DeviceSessionData:
         self.data_dir = Path(settings['data_dir']) / Path(get_today(settings))
         self.session_data = []
         self.session_averages = []
+        self.offset = settings['offset'] if 'offset' in settings else 0
         if self.data_dir.exists():
             self.session_data = self.set_session_data(
                 devices=self.get_devices(data_dir=self.data_dir),
@@ -124,8 +134,9 @@ class DeviceSessionData:
             self.session_averages = self.calculate_averages()
 
     @staticmethod
-    def to_timestamp(string):
-        return datetime.strptime(string, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+    def to_timestamp(string, offset=0):
+        return datetime.strptime(string, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc) + timedelta(hours=offset)
+        # return datetime.strptime(string, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
 
     @staticmethod
     def get_devices(data_dir):
@@ -143,7 +154,7 @@ class DeviceSessionData:
                 reader = csv.DictReader(csv_file)
                 for row in reader:
                     data.append({
-                        'timestamp': self.to_timestamp(row['timestamp_iso']),
+                        'timestamp': self.to_timestamp(string=row['timestamp_iso'], offset=self.offset),
                         'val': float(0 if len(row[char[1]])==0 else row[char[1]]),
                         'error': row['missing_value_reason']})
         else:
@@ -314,14 +325,14 @@ if __name__ == '__main__':
         print(f"devices: {get_devices()}")
 
     if not Path(cfg_file).exists():
-        print("New CFG")
         write_settings({
             'today': datetime.now().strftime("%Y-%m-%d"),
             'session_start': datetime.now().strftime("%H:%M"),
             'session_end': (datetime.now() + timedelta(hours=1)).strftime("%H:%M"),
             'show_graphs': False,
             'highlights': [],
-            'last_requests': []
+            'last_requests': [],
+            'offset': 2
         })
 
     set_users()

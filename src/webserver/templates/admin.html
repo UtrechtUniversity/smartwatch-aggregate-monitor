@@ -38,6 +38,10 @@ $( document ).ready(function()
         var today = $('#today').val();
         if (today) postData({'today': today});
     });
+    $('#offset').on('change', function () {
+        var offset = $('#offset').val();
+        if (offset) postData({'offset': offset});
+    });
     $('#showGraphs').on('click', function () {
         if (today) postData({'show_graphs': $('#showGraphs').is(":checked")});
     });
@@ -97,6 +101,16 @@ $( document ).ready(function()
                 <input class="set-button" type="button" id="setEndButton" value="Instellen" />
                 <span id="endTime"></span>
             </div>
+        </div>
+
+        <div class="session">
+            <div>Offset:</div>
+            <input type="input" id="offset" value="" disabled="disabled" /> uur
+            <input type="button" onclick="
+                $('#offset').attr('disabled', !$('#offset').attr('disabled'));
+                $(this).attr('value',$('#offset').attr('disabled') ? 'edit' : 'klaar' );
+                $('#offset').focus();
+                " value="edit">
         </div>
 
         <div class="doc">

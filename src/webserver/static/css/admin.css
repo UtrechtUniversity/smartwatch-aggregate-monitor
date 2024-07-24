@@ -150,6 +150,10 @@ div.session > div {
     transform: translateX(13px);
   }
   
+  input#offset {
+    width: 25px;
+  }
+
   /* Rounded sliders */
   .slider.round {
     border-radius: 17px;

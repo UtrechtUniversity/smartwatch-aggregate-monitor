@@ -154,11 +154,13 @@ function setData(data) {
     $("#startTime").html(data.session.start);
     $("#endTime").html(data.session.end);
     $("#today").val(data.session.today);
+    $("#offset").val(data.session.offset);
 }
 
 function loadData() {
     $("#load-status").html("&#10227;").show();
     $.getJSON(data_url, function(data) {
+        // console.log(data)
         setData(data)
         $("#load-status").fadeOut(555);
     }); 
