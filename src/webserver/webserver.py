@@ -73,9 +73,7 @@ def set_settings(data):
         if key == 'today' and data[key]==datetime.now().strftime("%Y-%m-%d"):
             del settings[key]
 
-        if key == 'devices':
-            del settings[key]
-
+    del settings['devices']
     write_settings(settings)
 
 def set_users():
