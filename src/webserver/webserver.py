@@ -86,9 +86,10 @@ def get_device_serial(devices, device_id):
     return device[0]['serial']
 
 def get_admin_data():
+
     def add_meta_data(dict, devices_with_data):
-        dict['latest_request']=get_latest_request(device_id=dict['id'])
-        dict['has_data']=dict['serial'] in devices_with_data
+        dict['latest_request'] = get_latest_request(device_id=dict['id'])
+        dict['has_data'] = dict['serial'] in devices_with_data
         return dict
 
     settings = get_settings()
@@ -209,6 +210,8 @@ def root():
 @app.route('/admin/')
 @auth.login_required()
 def admin():
+
+    set_users()
 
     for device in get_devices():
         make_qr_code(f"{base_url}/device/{device['id']}/", f"qr_device_{device['id']}")

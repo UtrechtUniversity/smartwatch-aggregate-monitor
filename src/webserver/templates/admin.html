@@ -80,7 +80,7 @@ $( document ).ready(function()
                 <input type="date" id="today" value="" disabled="disabled" />
                 <input type="button" onclick="
                     $('#today').attr('disabled', !$('#today').attr('disabled'));
-                    $(this).attr('value',$('#today').attr('disabled') ? 'edit' : 'klaar' );
+                    $(this).attr('value',$('#today').attr('disabled') ? 'edit' : 'opslaan' );
                     " value="edit">
             </div>
         </div>
@@ -108,7 +108,7 @@ $( document ).ready(function()
             <input type="input" id="offset" value="" disabled="disabled" /> uur
             <input type="button" onclick="
                 $('#offset').attr('disabled', !$('#offset').attr('disabled'));
-                $(this).attr('value',$('#offset').attr('disabled') ? 'edit' : 'klaar' );
+                $(this).attr('value',$('#offset').attr('disabled') ? 'edit' : 'opslaan' );
                 $('#offset').focus();
                 " value="edit">
         </div>
@@ -122,7 +122,7 @@ $( document ).ready(function()
                 <p>
                     <span class="topic">Datum</span>: de datum loopt automatisch mee met de huidige datum, en hoeft niet te worden aangepast, 
                     tenzij er gegevens van een specifieke, eerdere datum moeten worden getoond. Klik in dat geval op 'edit' om
-                    de datum wijzigbaar te maken, en vervolgens op het kalender-icoon. Klik de gewenste datum aan en vervolgens op 'klaar' 
+                    de datum wijzigbaar te maken, en vervolgens op het kalender-icoon. Klik de gewenste datum aan en vervolgens op 'opslaan' 
                     om de datum op te slaan.<br />
                     Stel de datum op de huidige datum in om hem weer automatisch te laten meelopen.
                 </p>
@@ -130,6 +130,11 @@ $( document ).ready(function()
                     <span class="topic">Start & Einde</span>: bepalen het begin en einde van het tijdvak waarvan de grafieken gegevens tonen.
                     Klik op 'kies tijd', kies de gewenste start- of eindtijd, en klik op 'instellen' om deze tijd in te stellen. De huidige
                     ingestelde tijden worden weergegeven naast de knop.
+                </p>
+                <p>
+                    <span class="topic">Offset</span>: de <i>timestamps</i> van de geaggregeerde gegevens blijken om een of andere reden twee
+                    uur achter te lopen. De offset wordt bij die tijden opgeteld om ze weer kloppende te krijgen. Mocht het verschil opeens
+                    verdwenen zijn, zet de offset dan op 0.
                 </p>
                 <p>
                     De grafieken blijven de gegevens uit het ingestelde datum/tijdvak weergegeven net zo lang tot er een nieuwe
@@ -242,6 +247,7 @@ $( document ).ready(function()
                     <th>Wachtwoord</th>
                     <th>Laatste request</th>
                     <th>&#128200;</th>
+                    <th>QR-code</th>
                     <th>&#128279;</th>
                 </tr>
             </thead>
