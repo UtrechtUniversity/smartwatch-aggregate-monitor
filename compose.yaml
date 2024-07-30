@@ -10,6 +10,7 @@ services:
       - DEVICES_FILE=/config/devices.json
       - DEBUG=1
       - PYTHONUNBUFFERED=1
+      - BASE_URL=https://lowlands2024.its-re.src.surf-hosted.nl
     volumes:
       - /data/lowlands/config:/config
       - /data/lowlands/data:/data
