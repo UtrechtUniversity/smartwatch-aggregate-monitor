@@ -131,8 +131,8 @@ class DeviceSessionData:
             self.session_data = self.set_session_data(
                 devices=self.get_devices(data_dir=self.data_dir),
                 chars=self.characteristics,
-                session_start=self.to_timestamp(f"{settings['today']}T{settings['session_start']}:00Z"), 
-                session_end=self.to_timestamp(f"{settings['today']}T{settings['session_end']}:00Z")
+                session_start=self.to_timestamp(f"{get_today(settings)}T{settings['session_start']}:00Z"), 
+                session_end=self.to_timestamp(f"{get_today(settings)}T{settings['session_end']}:00Z")
             )
             self.session_averages = self.calculate_averages()
 
@@ -331,7 +331,6 @@ if __name__ == '__main__':
 
     if not Path(cfg_file).exists():
         write_settings({
-            'today': datetime.now().strftime("%Y-%m-%d"),
             'session_start': datetime.now().strftime("%H:%M"),
             'session_end': (datetime.now() + timedelta(hours=1)).strftime("%H:%M"),
             'show_graphs': False,
