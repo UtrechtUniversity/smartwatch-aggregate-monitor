@@ -20,6 +20,7 @@ device_path = '/device/<ID>/'
 image_folder = '/app/static/img'
 
 def make_qr_code(url, filename):
+    return
     filename = f'{image_folder}/{filename}.svg'
     if Path(filename).is_file():
         return
@@ -53,8 +54,6 @@ def get_settings():
         settings = json.load(f)
     settings['data_dir'] = data_dir
     settings['devices'] = get_devices()
-    # if 'today' not in settings or len(settings['today'])==0:
-    #     settings['today'] = datetime.now().strftime("%Y-%m-%d")
     return settings
 
 def set_settings(data):
@@ -193,7 +192,7 @@ class DeviceSessionData:
     def get_session_data(self, device=None):
         if device and device in self.session_data:
             return { 'data': self.session_data[device], 'averages': self.session_averages } 
-        return { 'data': self.session_data, 'averages': self.session_averages } 
+        return { 'data': {}, 'averages': self.session_averages } 
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()
@@ -239,12 +238,17 @@ def admin_data():
 
 @app.route('/data/<device_id>/')
 def data(device_id):
-    avg_only = False
+    settings = get_settings()
     if device_id=='avg':
         avg_only = True
-        device_id = get_devices()[0]['id']
-
-    settings = get_settings()
+        for device in get_devices():
+            path = Path(settings['data_dir']) / Path(get_today(settings)) / Path(device['serial'])
+            if path.exists():
+                device_id = device['id']
+                break
+    else:
+        avg_only = False
+    
     device_serial = get_device_serial(devices=settings['devices'], device_id=device_id)
     dsd = DeviceSessionData(settings=settings)
 
@@ -252,7 +256,7 @@ def data(device_id):
         out = {'error': f"device {device_id} not found"}
         status = 404
     else:
-        write_latest_request(device_id)
+        write_latest_request('avg' if avg_only else device_id)
         session_data = dsd.get_session_data(device=device_serial)
         data = {}
         status = 200
@@ -272,7 +276,7 @@ def data(device_id):
             'avg_only' : avg_only,
             'show_graphs': settings['show_graphs'],
             'session_data': data,
-            'highlights': [ makeTimeToday(record=x, today=settings['today']) 
+            'highlights': [ makeTimeToday(record=x, today=get_today(settings)) 
                            for x in settings['highlights']] if 'highlights' in settings else [],
             'session': {
                 'today': get_today(settings),
