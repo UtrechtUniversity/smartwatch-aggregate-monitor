@@ -20,7 +20,6 @@ device_path = '/device/<ID>/'
 image_folder = '/app/static/img'
 
 def make_qr_code(url, filename):
-    return
     filename = f'{image_folder}/{filename}.svg'
     if Path(filename).is_file():
         return
