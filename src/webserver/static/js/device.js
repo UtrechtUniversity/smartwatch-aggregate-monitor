@@ -169,3 +169,30 @@ function loadData() {
     }); 
     setTimeout("loadData()", data_reload);
 }
+
+function loadStaticData(data) {
+    show_graphs = data.show_graphs
+    for (var prop in data.session_data) {
+        if (data.session_data.hasOwnProperty(prop)) {
+            for (ele in data.session_data[prop]) {
+                data.session_data[prop][ele].timestamp = new Date(data.session_data[prop][ele].timestamp);
+            }
+        }                    
+    }
+
+    let session_start = new Date(`${data.session.today} ${data.session.start}`)
+    let session_end = new Date(`${data.session.today} ${data.session.end}`)
+
+    data.highlights.forEach(function(x,i) {
+        x.timestamp = new Date(x.timestamp)
+        if (x.timestamp<session_start || x.timestamp>session_end) {
+            data.highlights.splice(i, 1);
+        }
+    })
+
+    data.highlights = {
+        'labels': data.highlights.map(({ label }) => label),
+        'timestamps': data.highlights.map(({ timestamp }) => timestamp)
+    }        
+    makePlots(data);
+}

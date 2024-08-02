@@ -75,6 +75,8 @@ function showDevices(devices) {
             data_link = '(no&nbsp;data)'
 
         let img_path = image_base_url.replace('__ID__', x.id)
+        let img_path_static = image_base_url_static.replace('__ID__', x.id)
+
         var req_diff = ''
         if (x.latest_request) req_diff = ` (${formatSeconds(Math.round((new Date() - new Date(x.latest_request))/1000))})`
         
@@ -90,6 +92,13 @@ function showDevices(devices) {
                     `<span class="pointable qr-code" data-id="${x.id}" onmousedown="showCode(this)">` +
                         `(sluiten)<br />` +
                         `<object type="image/svg+xml" data="${img_path}" class="logo">QR code</object>`+
+                    `</span>` +
+                `</td>`+
+                `<td class="center small code">`+
+                    `<span class="pointable qr-link" data-static-id="${x.id}" onmousedown="showStaticCode(this)">(klik)</span>`+
+                    `<span class="pointable qr-code" data-static-id="${x.id}" onmousedown="showStaticCode(this)">` +
+                        `(sluiten)<br />` +
+                        `<object type="image/svg+xml" data="${img_path_static}" class="logo">QR code (static)</object>`+
                     `</span>` +
                 `</td>`+
             `</tr>`;
@@ -109,6 +118,12 @@ function showCode(ele) {
     let a = $(ele).attr('data-id')
     $('.qr-link[data-id='+a+']').toggle();
     $('.qr-code[data-id='+a+']').toggle();
+}
+
+function showStaticCode(ele) {
+    let a = $(ele).attr('data-static-id')
+    $('.qr-link[data-static-id='+a+']').toggle();
+    $('.qr-code[data-static-id='+a+']').toggle();
 }
 
 function formatStartTime(start_time, incl_seconds=true) {

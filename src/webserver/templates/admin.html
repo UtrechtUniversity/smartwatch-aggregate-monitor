@@ -17,6 +17,7 @@ const data_reload = +"{{ data.data_reload }}"
 const label_show = "uitleg"
 const label_hide = "uitleg verbergen"
 const image_base_url = "{{ url_for('static', filename='img/qr_device___ID__.svg') }}"
+const image_base_url_static = "{{ url_for('static', filename='img/qr_static___ID__.svg') }}"
 
 $( document ).ready(function()
 {
@@ -248,7 +249,7 @@ $( document ).ready(function()
                     <th>Laatste request</th>
                     <th>&#128200;</th>
                     <th>QR-code</th>
-                    <th>&#128279;</th>
+                    <th>QR-code (static)</th>
                 </tr>
             </thead>
             <tbody id="device-list">

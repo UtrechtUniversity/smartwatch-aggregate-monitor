@@ -112,6 +112,56 @@ def get_admin_data():
 def get_today(settings):
     return settings['today'] if 'today' in settings else datetime.now().strftime("%Y-%m-%d")
 
+def get_device_data(device_id):
+    settings = get_settings()
+    if device_id=='avg':
+        avg_only = True
+        for device in get_devices():
+            path = Path(settings['data_dir']) / Path(get_today(settings)) / Path(device['serial'])
+            if path.exists():
+                device_id = device['id']
+                break
+    else:
+        avg_only = False
+    
+    device_serial = get_device_serial(devices=settings['devices'], device_id=device_id)
+    dsd = DeviceSessionData(settings=settings)
+
+    if not device_serial:
+        out = {'error': f"device {device_id} not found"}
+        status = 404
+    else:
+        write_latest_request('avg' if avg_only else device_id)
+        session_data = dsd.get_session_data(device=device_serial)
+        data = {}
+        status = 200
+        for char in session_data['data']:
+            data[char] = [
+                {
+                    'timestamp': x['timestamp'].strftime("%Y-%m-%d %H:%M"),
+                    'value': 0 if avg_only else x['val'],
+                    'average': [y['val'] for y in session_data['averages'][char] if y['timestamp']==x['timestamp']][0]
+                } for x in session_data['data'][char]]
+
+        def makeTimeToday(record, today):
+            record['timestamp'] = f"{today} {record['timestamp']}"
+            return record
+
+        out = {
+            'avg_only' : avg_only,
+            'show_graphs': settings['show_graphs'],
+            'session_data': data,
+            'highlights': [ makeTimeToday(record=x, today=get_today(settings)) 
+                           for x in settings['highlights']] if 'highlights' in settings else [],
+            'session': {
+                'today': get_today(settings),
+                'start': settings['session_start'],
+                'end': settings['session_end']
+            },
+        }
+
+        return out, status
+
 class DeviceSessionData:
 
     # [(var name, csv column header, json var name ), ... ]
@@ -217,6 +267,7 @@ def admin():
 
     for device in get_devices():
         make_qr_code(f"{base_url}/device/{device['id']}/", f"qr_device_{device['id']}")
+        make_qr_code(f"{base_url}/static/{device['id']}/", f"qr_static_{device['id']}")
     
     make_qr_code(f"{base_url}/device/avg/", f"qr_device_avg")
 
@@ -239,55 +290,11 @@ def admin_data():
 
 @app.route('/data/<device_id>/')
 def data(device_id):
-    settings = get_settings()
-    if device_id=='avg':
-        avg_only = True
-        for device in get_devices():
-            path = Path(settings['data_dir']) / Path(get_today(settings)) / Path(device['serial'])
-            if path.exists():
-                device_id = device['id']
-                break
-    else:
-        avg_only = False
-    
-    device_serial = get_device_serial(devices=settings['devices'], device_id=device_id)
-    dsd = DeviceSessionData(settings=settings)
 
-    if not device_serial:
-        out = {'error': f"device {device_id} not found"}
-        status = 404
-    else:
-        write_latest_request('avg' if avg_only else device_id)
-        session_data = dsd.get_session_data(device=device_serial)
-        data = {}
-        status = 200
-        for char in session_data['data']:
-            data[char] = [
-                {
-                    'timestamp': x['timestamp'].strftime("%Y-%m-%d %H:%M"),
-                    'value': 0 if avg_only else x['val'],
-                    'average': [y['val'] for y in session_data['averages'][char] if y['timestamp']==x['timestamp']][0]
-                } for x in session_data['data'][char]]
-
-        def makeTimeToday(record, today):
-            record['timestamp'] = f"{today} {record['timestamp']}"
-            return record
-
-        out = {
-            'avg_only' : avg_only,
-            'show_graphs': settings['show_graphs'],
-            'session_data': data,
-            'highlights': [ makeTimeToday(record=x, today=get_today(settings)) 
-                           for x in settings['highlights']] if 'highlights' in settings else [],
-            'session': {
-                'today': get_today(settings),
-                'start': settings['session_start'],
-                'end': settings['session_end']
-            },
-        }
+    data, status = get_device_data(device_id=device_id)
 
     response = app.response_class(
-        response=json.dumps(out),
+        response=json.dumps(data),
         status=status,
         mimetype='application/json'
     )
@@ -295,16 +302,26 @@ def data(device_id):
     return response
 
 @app.route('/device/<device_id>/')
+@app.route('/static/<device_id>/')
 @auth.login_required
 def device(device_id):
+    static = '/static/' in request.path
     settings = get_settings()
     device_serial = get_device_serial(devices=settings['devices'], device_id=device_id)
     if not device_id=='avg' and not device_serial:
         return f"device {device_id} not found"
+
+    device_data, _ = get_device_data(device_id=device_id)
+
     data = {
         'data_url': f'/data/{device_id}/',
-        'data_reload': device_refresh
+        'data_reload': device_refresh,
+        'static': static
     }
+
+    if static:
+        data['device_data'] = device_data
+
     return render_template('device.html', data=data)
 
 @app.route('/ajax/', methods = ['POST'])
