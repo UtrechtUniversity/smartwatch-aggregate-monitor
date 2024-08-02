@@ -181,10 +181,12 @@ class DeviceSessionData:
                     averages[key] = [{'timestamp': x['timestamp'], 'val': []} for x in d_data]
 
                 for ts in averages[key]:
-                    ts['val'].append([x['val'] for x in d_data if x['timestamp']==ts['timestamp']][0])
-        
+                    t = [x['val'] for x in d_data if x['timestamp']==ts['timestamp'] and x['val']!=0]
+                    if len(t)>0:
+                        ts['val'].append(t[0])
+
         for key in averages:
-            averages[key] = [{'timestamp': x['timestamp'], 'val': fmean(x['val'])} for x in averages[key]]
+            averages[key] = [{'timestamp': x['timestamp'], 'val': fmean(x['val']) if len(x['val'])>0 else 0} for x in averages[key]]
         
         return averages
 
