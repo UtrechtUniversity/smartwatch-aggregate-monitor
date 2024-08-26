@@ -6,6 +6,8 @@ from pathlib import Path
 
 class CarePortalDataDownloader:
 
+    biomarkers = ["eda", "pulse-rate"]
+
     def __init__(self, 
                  aws_cfg_file,
                  data_dir,
@@ -50,7 +52,9 @@ class CarePortalDataDownloader:
         for my_bucket_object in self.bucket.objects.filter(Prefix=self.prefix):
             if my_bucket_object.key[-4:]==".csv" and \
                 (self.monitor_date=='*' or my_bucket_object.key.split("/")[5]==self.monitor_date):
-                objects.append(my_bucket_object.key)
+                for biomarker in self.biomarkers:
+                    if my_bucket_object.key[-(4+len(biomarker)):-4]==biomarker:
+                        objects.append(my_bucket_object.key)
 
         return objects
 
