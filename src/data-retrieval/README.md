@@ -43,7 +43,7 @@ The program downloads CSV-files with biometric for all devices that are availabl
 
 When an EmbracePlus is activated, it starts sending back data to the portal, even if it's not worn. Once the portal has received data for a specific device, it aggregates the data over one-minute periods, and writes the data to the S3 bucket (how often this is done is unclear, but it seems every 5 mimutes or so). This results in fourteen files per day per device, one for each measured variable. Each file always contains data for the entire day, even if that day is not over yet, in which aggregates of timeperiods still to come are being presented with the error label 'device_not_recording'. 
 
-Ideally, the program is scheduled over short intervals (say 5 or less minutes), to keep the data reasonably up to date.
+Ideally, the program is scheduled over short intervals (say 5 minutes or less), to keep the data up to date.
 
 
 ## License
